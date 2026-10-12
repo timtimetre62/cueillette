@@ -704,7 +704,9 @@ header select{font:inherit;font-size:.85rem;border-radius:8px;border:0;padding:5
 .bar{background:var(--bg);border-top:1px solid var(--line);padding:6px 10px calc(env(safe-area-inset-bottom,0px) + 8px);display:flex;flex-direction:column;gap:6px}
 #status{font-size:.86rem;color:var(--muted);min-height:1.25em}
 #status b{color:var(--ink)}
-.btns{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.btns button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px!important}
+.btns .ic{font-size:1.15rem;line-height:1.2}
 .btns button{font:inherit;font-size:.8rem;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:9px 2px;cursor:pointer}
 .btns button.on{background:var(--me);border-color:var(--me);color:#fff}
 .btns button.main{background:var(--moss);border-color:var(--moss);color:#fff}
@@ -814,6 +816,31 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 .free{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px}
 .free a{display:block;text-align:center;font-weight:700;border-radius:10px;padding:10px;background:var(--moss);color:#fff;text-decoration:none}
 .free a.sec{background:#fff;color:var(--moss);border:1px solid var(--moss)}
+
+.fab{display:flex;flex-direction:column;gap:8px}
+.fab button{width:48px;height:48px;border-radius:50%;border:0;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.fab button.on{background:#1a73e8;color:#fff}
+.fab button small{font-size:.55rem;position:absolute}
+.nav{position:absolute;left:10px;right:70px;bottom:10px;z-index:900;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.3);padding:10px 12px;display:flex;align-items:center;gap:12px}
+.nav[hidden]{display:none}
+.nav .arrow{width:58px;height:58px;flex:0 0 auto;border-radius:50%;background:#eef4ea;display:flex;align-items:center;justify-content:center}
+.nav .arrow svg{width:44px;height:44px;transition:transform .3s}
+.nav .ni{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.nav .ni b{font-size:1.3rem;font-variant-numeric:tabular-nums}
+.nav .ni span{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav .nb{display:flex;flex-direction:column;gap:4px}
+.nav .nb button{font:inherit;font-size:.75rem;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 7px;cursor:pointer}
+#map{position:relative}
+.today-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 11px;margin-bottom:7px;cursor:pointer;text-align:left;font:inherit;width:100%}
+.today-row b{font-size:.95rem;display:flex;align-items:center;gap:7px}
+.today-row b i{width:11px;height:11px;border-radius:50%}
+.today-row .v{font-size:1.3rem;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.today-row small{color:var(--muted);font-size:.78rem}
+.today-row .bar2{grid-column:1/-1;height:6px;background:#e3e8de;border-radius:3px;overflow:hidden}
+.today-row .bar2 span{display:block;height:100%}
+.lp{display:flex;flex-direction:column;gap:6px;min-width:170px}
+.lp button{font:inherit;font-size:.9rem;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px;cursor:pointer;text-align:left}
+.tips{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:.92rem}
 </style>
 </head>
 <body>
@@ -827,15 +854,14 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
   </div>
   <div class="sp1"><button id="sp-open"><i id="sp-dot"></i><span id="sp-name">Espèce</span><span class="sp-n" id="sp-n"></span><span>▾</span></button></div>
 </header>
-<div id="map"></div>
+<div id="map"><div class="nav" id="nav" hidden><div class="arrow"><svg viewBox="0 0 40 40" id="nav-arrow"><path d="M20 3 L32 34 L20 27 L8 34 Z" fill="#1a73e8"/></svg></div><div class="ni"><b id="nav-d">–</b><span id="nav-n"></span><span id="nav-h"></span></div><div class="nb"><button id="nav-compass">Boussole</button><button id="nav-off">Arrêter</button></div></div></div>
 <div class="bar">
   <div id="status">Chargement des zones…</div>
   <div class="btns">
-    <button id="b-gps">Localiser</button>
-    <button id="b-cou">Couches</button>
-    <button id="b-add" class="main">Noter ici</button>
-    <button id="b-list">Mes coins</button>
-    <button id="b-atlas">Atlas</button>
+    <button id="b-today"><span class="ic">☀️</span>Aujourd'hui</button>
+    <button id="b-add" class="main"><span class="ic">＋</span>Noter ici</button>
+    <button id="b-list"><span class="ic">★</span>Mes coins</button>
+    <button id="b-atlas"><span class="ic">📖</span>Atlas</button>
   </div>
 </div>
 
@@ -853,11 +879,41 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
   <img class="legend" id="ess-leg" alt="Légende des essences IGN" hidden>
   <label class="ck"><input type="checkbox" id="c-anc"> Forêts anciennes</label>
   <label class="ck"><input type="checkbox" id="c-prsf"> Points de rencontre des secours en forêt</label>
+  <div class="row"><button id="trail-clear">Effacer mon trajet (pointillés bleus)</button></div>
   <div class="row"><button id="b-view">Charger les peuplements de la zone affichée (bois privés compris)</button></div>
   <p class="note">Se fait aussi tout seul quand vous zoomez sur un bois avec du réseau.</p>
   <h3>Aller à une forêt</h3>
   <div class="list-forets" id="forets"></div>
   <div class="row"><button id="cou-close" class="ok">Fermer</button></div>
+</div>
+
+<div class="sheet" id="s-today" hidden>
+  <h2>Que chercher aujourd'hui ?</h2>
+  <p class="note" id="td-wx"></p>
+  <div id="td-list"></div>
+  <p class="note">Touchez une espèce pour l'afficher sur la carte, au plus près de vous. Le classement combine la saison et la météo des 3 prochains jours.</p>
+  <div class="row"><button id="td-close" class="ok">Fermer</button></div>
+</div>
+
+<div class="sheet" id="s-car" hidden>
+  <h2>🚗 Ma voiture</h2>
+  <p class="note" id="car-info"></p>
+  <div class="row"><button id="car-set" class="ok">Garer ici</button></div>
+  <div class="row"><button id="car-go">Me guider vers la voiture</button></div>
+  <div class="row"><button id="car-del">Oublier la voiture</button><button id="car-close">Fermer</button></div>
+</div>
+
+<div class="sheet" id="s-tips" hidden>
+  <h2>Bienvenue 🍄</h2>
+  <ul class="tips">
+    <li><b>☀️ Aujourd'hui</b> : les espèces qui ont le plus de chances de pousser en ce moment, d'après la météo.</li>
+    <li><b>Le nom en haut</b> : choisissez l'espèce ; la carte montre ses zones favorables et les endroits où elle a été trouvée.</li>
+    <li><b>🎯</b> à droite : votre position. <b>🚗</b> : notez où vous êtes garé pour retrouver la voiture.</li>
+    <li><b>Appui long sur la carte</b> : noter un coin ou se faire guider vers cet endroit (une flèche indique la direction).</li>
+    <li><b>＋ Noter ici</b> : enregistrez vos trouvailles avec photo et pH.</li>
+    <li><b>📖 Atlas</b> : fiches, planches de comparaison et clé d'identification.</li>
+  </ul>
+  <div class="row"><button id="tips-ok" class="ok">C'est parti</button></div>
 </div>
 
 <div class="sheet" id="s-sp" hidden>
@@ -1202,12 +1258,15 @@ async function loadGbif(sp,force){const d=NEW[sp];if(!d||gbifBusy[sp])return;con
     const MO=["","janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
     const finds=cl.map(c=>{const ys=[...new Set(c.p.map(x=>x.y).filter(Boolean))].sort();const ms=[...new Set(c.p.map(x=>x.m).filter(Boolean))].sort();
       return {sp,lat:+c.lat.toFixed(5),lon:+c.lon.toFixed(5),n:c.p.length,years:ys.join(","),last:+(ys[ys.length-1]||0),months:ms.map(m=>MO[+m]).join(", "),loc:[...new Set(c.p.map(x=>x.loc).filter(Boolean))].slice(0,2).join(" / "),noms:[...new Set(c.p.map(x=>x.nm))].join(" / ")}});
-    LS.set(gbifKey(sp),{t:Date.now(),finds});if(SP===sp){drawObs();$("sp-n").textContent=getFinds(sp).length+" lieux";status(`${finds.length} endroits précis avec ${SPN[sp].toLowerCase()} (${recs.length} observations).`)}}
+    LS.set(gbifKey(sp),{t:Date.now(),finds});if(SP===sp){drawObs();$("sp-n").textContent=getFinds(sp).length?getFinds(sp).length+" lieux":"";status(`${finds.length} endroits précis avec ${SPN[sp].toLowerCase()} (${recs.length} observations).`)}}
   catch(e){if(SP===sp)status("Observations indisponibles sans réseau pour cette espèce. Les zones favorables restent affichées.")}
   gbifBusy[sp]=false}
 let SP=LS.get("cu-sp",null)||(()=>{const m=new Date().getMonth();return m>=8?"trompette":m>=5?"girolle":m>=2?"morille":"tube"})();
 
 const map=L.map("map",{zoomControl:true}).setView([50.70,1.80],11);
+const fab=L.control({position:"bottomright"});
+fab.onAdd=()=>{const d=L.DomUtil.create("div","fab");d.innerHTML=`<button id="b-cou" title="Couches et forêts">🗂️</button><button id="b-car" title="Ma voiture">🚗</button><button id="b-gps" title="Me localiser">🎯</button>`;L.DomEvent.disableClickPropagation(d);return d};
+fab.addTo(map);
 map.createPane("parcelles").style.zIndex=350;
 map.createPane("zones").style.zIndex=380;
 const W=(layer,fmt,style="normal")=>`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${layer}&STYLE=${encodeURIComponent(style)}&TILEMATRIXSET=PM&FORMAT=${fmt}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}`;
@@ -1359,12 +1418,13 @@ const dir=d=>["N","NE","E","SE","S","SO","O","NO"][Math.round(d/45)%8];
 const fmt=m=>m<1000?Math.round(m)+" m":(m/1000).toFixed(m<10000?1:0)+" km";
 function nearestObs(){if(!me)return null;let b=null;getFinds(SP).forEach(f=>{const d=dist(me,f);if(!b||d<b.d)b={d,f}});return b}
 function updateStatus(){
+  if(typeof drawNav==="function")drawNav();if(typeof addTrail==="function")addTrail();
   if(!me){if(target)status(`Cible : <b>${esc(target.nom)}</b>. En attente du GPS…`);return}
   let s=`Vous : ± ${me.acc} m`;
   const n=nearestObs();if(n)s+=` · observation de ${SPN[SP].toLowerCase()} la plus proche : ${fmt(n.d)} ${dir(bearing(me,n.f))}`;
-  if(target){const d=dist(me,target),b=bearing(me,target);s=`<b>${esc(target.nom)}</b> : ${fmt(d)} vers ${dir(b)} (${Math.round(b)}°) · <a href="#" id="t-off">retirer</a><br>`+s}
+  
   status(s);const o=$("t-off");if(o)o.onclick=e=>{e.preventDefault();target=null;updateStatus()}}
-map.on("popupopen",e=>e.popup.getElement().querySelectorAll("[data-target]").forEach(a=>a.onclick=ev=>{ev.preventDefault();const [la,lo]=a.dataset.target.split(",");target={lat:+la,lon:+lo,nom:a.dataset.nom};map.closePopup();updateStatus();if(watch===null)startGps()}));
+map.on("popupopen",e=>e.popup.getElement().querySelectorAll("[data-target]").forEach(a=>a.onclick=ev=>{ev.preventDefault();const [la,lo]=a.dataset.target.split(",");setTarget({lat:+la,lon:+lo,nom:a.dataset.nom})}));
 
 // ---- Mes coins (avec photos et pH)
 const DBP=new Promise((ok,ko)=>{try{const r=indexedDB.open("cueillette",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)}catch(e){ko(e)}});
@@ -1388,7 +1448,8 @@ let pending=null,draft=[];
 function drawDraft(){$("add-photos").innerHTML="";draft.forEach((p,i)=>{const d=document.createElement("div");d.innerHTML=`<img src="${p.url}" alt=""><button aria-label="Retirer">✕</button>`;d.querySelector("button").onclick=()=>{draft.splice(i,1);drawDraft()};$("add-photos").appendChild(d)})}
 async function addFiles(files){for(const f of files){try{const b=await shrink(f);draft.push({blob:b,url:URL.createObjectURL(b)})}catch(e){status("Photo illisible.")}}drawDraft()}
 $("add-cam").onchange=e=>{addFiles([...e.target.files]);e.target.value=""};$("add-gal").onchange=e=>{addFiles([...e.target.files]);e.target.value=""};
-$("b-add").onclick=()=>{if(me){pending={lat:me.lat,lon:me.lon};$("add-pos").textContent=`À votre position GPS (± ${me.acc} m).`}else{const c=map.getCenter();pending={lat:c.lat,lon:c.lng};$("add-pos").textContent="GPS inactif : le coin sera placé au centre de la carte."}
+function openAdd(pos,txt){pending=pos;$("add-pos").textContent=txt;$("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";draft=[];drawDraft();$("s-add").hidden=false}
+$("b-add").onclick=()=>{if(me){pending={lat:me.lat,lon:me.lon};$("add-pos").textContent=`À votre position GPS (± ${me.acc} m).`}else{const c=map.getCenter();pending={lat:c.lat,lon:c.lng};$("add-pos").textContent="GPS inactif : le coin sera placé au centre de la carte. Astuce : appui long sur la carte pour choisir l'endroit."}
   $("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";draft=[];drawDraft();$("s-add").hidden=false};
 $("add-cancel").onclick=()=>{draft=[];$("s-add").hidden=true};
 $("add-ok").onclick=async()=>{const ids=[];try{for(const p of draft){const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await putPhoto(id,p.blob);ids.push(id)}}catch(e){status("Photos non enregistrées (stockage indisponible).")}
@@ -1547,6 +1608,55 @@ function renderTab(){atStack=[];if(atTab==="fiches")renderFiches();else if(atTab
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{setTab(b.dataset.tab);renderTab()});
 $("b-atlas").onclick=()=>{$("atlas").hidden=false;renderTab()};
 $("at-close").onclick=()=>$("atlas").hidden=true;
+
+// ---- Navigation fléchée + boussole
+let HEAD=null;
+function onOri(e){let h=null;if(e.webkitCompassHeading!=null)h=e.webkitCompassHeading;else if(e.absolute&&e.alpha!=null)h=360-e.alpha;if(h!=null){HEAD=h;drawNav()}}
+async function enableCompass(){try{if(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission){const r=await DeviceOrientationEvent.requestPermission();if(r!=="granted"){status("Boussole refusée : la flèche reste orientée nord en haut.");return}}
+  window.addEventListener("deviceorientationabsolute",onOri,true);window.addEventListener("deviceorientation",onOri,true);LS.set("cu-compass",1);$("nav-compass").textContent="Boussole ✓"}catch(e){status("Boussole indisponible sur ce téléphone.")}}
+if(LS.get("cu-compass",0)&&!(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission))enableCompass();
+function drawNav(){if(!target){$("nav").hidden=true;return}$("nav").hidden=false;$("nav-n").textContent=target.nom;
+  if(!me){$("nav-d").textContent="GPS…";$("nav-h").textContent="";return}
+  const d=dist(me,target),b=bearing(me,target);$("nav-d").textContent=d<15?"Vous y êtes !":fmt(d);
+  const rot=HEAD!=null?b-HEAD:b;$("nav-arrow").style.transform=`rotate(${rot}deg)`;
+  $("nav-h").textContent=HEAD!=null?"Suivez la flèche (téléphone à plat)":`Direction ${dir(b)} · nord en haut de l'écran`}
+function setTarget(t){target=t;map.closePopup();drawNav();updateStatus();if(watch===null)startGps()}
+$("nav-off").onclick=()=>{target=null;drawNav();updateStatus()};
+$("nav-compass").onclick=enableCompass;
+// ---- Ma voiture
+let CAR=LS.get("cu-car",null),carMk=null;
+function drawCar(){if(carMk){map.removeLayer(carMk);carMk=null}if(CAR)carMk=L.marker([CAR.lat,CAR.lon],{icon:L.divIcon({className:"",html:'<div style="font-size:26px;line-height:26px">🚗</div>',iconSize:[26,26],iconAnchor:[13,13]})}).addTo(map).bindPopup(`<div class="pop"><h3>Ma voiture</h3><p>Garée le ${new Date(CAR.t).toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"})}</p><div class="links">${aimLink(CAR.lat,CAR.lon,"Ma voiture")}</div></div>`)}
+$("b-car").onclick=()=>{$("car-info").textContent=CAR?`Voiture garée ${new Date(CAR.t).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}${me?`, à ${fmt(dist(me,CAR))}`:""}.`:"Aucune voiture enregistrée. Touchez « Garer ici » en arrivant au parking.";$("car-go").disabled=!CAR;$("car-del").disabled=!CAR;$("s-car").hidden=false};
+$("car-set").onclick=()=>{const p=me?{lat:me.lat,lon:me.lon}:{lat:map.getCenter().lat,lon:map.getCenter().lng};CAR={...p,t:Date.now()};LS.set("cu-car",CAR);drawCar();$("s-car").hidden=true;status(me?"Voiture enregistrée à votre position.":"GPS inactif : voiture placée au centre de la carte.");if(watch===null)startGps()};
+$("car-go").onclick=()=>{$("s-car").hidden=true;if(CAR)setTarget({lat:CAR.lat,lon:CAR.lon,nom:"Ma voiture"})};
+$("car-del").onclick=()=>{CAR=null;LS.set("cu-car",null);drawCar();$("s-car").hidden=true};
+$("car-close").onclick=()=>$("s-car").hidden=true;
+drawCar();
+// ---- Appui long sur la carte
+map.on("contextmenu",e=>{const ll=e.latlng;const d=L.DomUtil.create("div","lp");
+  d.innerHTML=`<button data-a="note">＋ Noter un coin ici</button><button data-a="go">➜ Me guider ici</button><button data-a="car">🚗 Ma voiture est ici</button>${me?`<small class="note">À ${fmt(dist(me,{lat:ll.lat,lon:ll.lng}))} de vous</small>`:""}`;
+  d.querySelector('[data-a="note"]').onclick=()=>{map.closePopup();openAdd({lat:ll.lat,lon:ll.lng},"À l'endroit choisi sur la carte.")};
+  d.querySelector('[data-a="go"]').onclick=()=>setTarget({lat:ll.lat,lon:ll.lng,nom:"Point choisi"});
+  d.querySelector('[data-a="car"]').onclick=()=>{CAR={lat:ll.lat,lon:ll.lng,t:Date.now()};LS.set("cu-car",CAR);drawCar();map.closePopup()};
+  L.popup().setLatLng(ll).setContent(d).openOn(map)});
+// ---- Mon trajet (fil d'Ariane)
+let TRAIL=LS.get("cu-trail",{t:0,p:[]});if(Date.now()-TRAIL.t>12*36e5)TRAIL={t:Date.now(),p:[]};
+const trailLine=L.polyline(TRAIL.p,{color:"#1a73e8",weight:3,opacity:.6,dashArray:"2 6",interactive:false}).addTo(map);
+function addTrail(){if(!me||me.acc>40)return;const l=TRAIL.p[TRAIL.p.length-1];if(l&&dist({lat:l[0],lon:l[1]},me)<15)return;TRAIL.p.push([+me.lat.toFixed(6),+me.lon.toFixed(6)]);TRAIL.t=Date.now();trailLine.setLatLngs(TRAIL.p);if(TRAIL.p.length%5===0)LS.set("cu-trail",TRAIL)}
+$("trail-clear").onclick=()=>{TRAIL={t:Date.now(),p:[]};trailLine.setLatLngs([]);LS.set("cu-trail",TRAIL);status("Trajet effacé.")};
+// ---- Aujourd'hui
+function renderToday(){if(!WX){$("td-wx").textContent="Météo pas encore chargée : ouvrez l'appli avec du réseau.";$("td-list").innerHTML="";loadWx(true);return}
+  const i=todayIdx(),f=factsAt(i),T=WX.daily.time;
+  $("td-wx").textContent=`Pluie 15 derniers jours : ${Math.round(f.rain15)} mm · dernière bonne pluie : ${f.last!=null?dayName(T[f.last])+` (il y a ${f.since} j)`:"aucune récente"} · température moyenne : ${f.t7.toFixed(0)} °C.`;
+  const rows=Object.keys(MET).filter(k=>SPN[k]).map(k=>{const now=indexAt(k,i).v;let best=i,bv=now;for(let d=i;d<Math.min(T.length,i+4);d++){const v=indexAt(k,d).v;if(v>bv){bv=v;best=d}}return {k,now,bv,best}}).filter(r=>r.bv>0).sort((a,b)=>b.bv-a.bv||b.now-a.now).slice(0,10);
+  $("td-list").innerHTML=rows.length?rows.map(r=>`<button class="today-row" data-sp="${r.k}"><b><i style="background:${COL[r.k]}"></i>${esc(SPN[r.k])}</b><span class="v" style="color:${lvlCol(r.now)}">${r.now}</span><small>${r.best===i?"Au mieux aujourd'hui":`Encore mieux ${dayName(T[r.best])} (${r.bv})`}${getFinds(r.k).length?` · ${getFinds(r.k).length} lieux connus`:""}</small><small></small><div class="bar2"><span style="width:${Math.max(3,r.now)}%;background:${lvlCol(r.now)}"></span></div></button>`).join(""):`<p class="note">Rien de favorable en ce moment : il faut une bonne pluie.</p>`;
+  $("td-list").querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{$("s-today").hidden=true;setSp(b.dataset.sp);goNearest(b.dataset.sp)})}
+function goNearest(sp){const fs=getFinds(sp);if(!fs.length)return;follow=false;if(me){let b=null;fs.forEach(f=>{const d=dist(me,f);if(!b||d<b.d)b={d,f}});map.fitBounds(L.latLngBounds([[me.lat,me.lon],[b.f.lat,b.f.lon]]).pad(.3),{maxZoom:16})}else map.fitBounds(L.latLngBounds(fs.map(f=>[f.lat,f.lon])).pad(.1),{maxZoom:14})}
+$("b-today").onclick=()=>{renderToday();$("s-today").hidden=false};
+$("td-close").onclick=()=>$("s-today").hidden=true;
+// ---- Conseils au premier lancement
+if(!LS.get("cu-tips8",0))$("s-tips").hidden=false;
+$("tips-ok").onclick=()=>{LS.set("cu-tips8",1);$("s-tips").hidden=true};
 
 
 // ---- Cartes hors ligne : précharge Plan IGN + parcelles ONF d'une forêt (zoom 12 à 16)
