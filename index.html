@@ -733,7 +733,7 @@ header select{font:inherit;font-size:.85rem;border-radius:8px;border:0;padding:5
 .sw{width:16px;height:12px;border-radius:3px;display:inline-block}
 img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 .list-forets button{display:block;width:100%;text-align:left;font:inherit;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:pointer}
-.list-forets .fr{display:flex;gap:6px}.list-forets .fr button:first-child{flex:1}.list-forets .fr button.off{flex:0 0 auto;width:auto;font-size:.8rem;text-align:center}
+.list-forets .fr{display:flex;gap:6px}.list-forets .fb{display:flex;flex-direction:column;gap:4px}.list-forets a.chasse{display:block;font-size:.72rem;font-weight:700;text-align:center;border:1px solid #c0392b;color:#c0392b;background:#fff;border-radius:10px;padding:6px 4px;text-decoration:none}.list-forets .fr button:first-child{flex:1}.list-forets .fr button.off{flex:0 0 auto;width:auto;font-size:.8rem;text-align:center}
 .list-forets small{display:block;color:var(--muted);font-size:.8rem}
 
 .thermo{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.3);padding:8px 8px 6px;width:66px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;font:12px/1.2 system-ui}
@@ -1376,7 +1376,10 @@ D.secteurs.forEach(s=>L.marker([s.lat,s.lon],{icon:pin(COL.smnf,22,"M","5px")}).
   .bindPopup(`<div class="pop"><h3>${esc(s.nom)}</h3>${s.parc?`<p><span class="tag" style="background:${COL.smnf}">${esc(s.parc)}</span></p>`:""}<p>${esc(s.txt)}</p><p class="note">Secteur décrit par la Société mycologique du Nord de la France ; position du lieu-dit IGN.</p><div class="links"><a href="${gmaps(s.lat,s.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(s.lat,s.lon,s.nom)}</div></div>`));
 D.acces.forEach(a=>L.marker([a.lat,a.lon],{icon:pin(COL.acces,20,"P","5px")}).addTo(map)
   .bindPopup(`<div class="pop"><h3>${esc(a.nom)}</h3><p>${esc(a.info)}</p><div class="links"><a href="${gmaps(a.lat,a.lon)}" target="_blank" rel="noopener">Itinéraire Google Maps</a>${aimLink(a.lat,a.lon,a.nom)}</div></div>`));
-$("forets").innerHTML=D.forets.map(f=>`<div class="fr"><button data-go="${f.lat},${f.lon}"><b>${esc(f.nom)}</b><small>${esc(f.bilan)}</small></button><button class="off" data-off="${f.id}">Hors<br>ligne</button></div>`).join("");
+const ONF_ID={boulogne:"f10484f",desvres:"f10116b",hardelot:"f09928v",guines:"f10252h",tournehem:"f10062z",hesdin:"f10548r"};
+const ONF_ALL="https://www.onf.fr/chasse/les-calendriers-de-chasse-en-foret-domaniale";
+const chasseUrl=id=>ONF_ID[id]?`https://www.onf.fr/vivre-la-foret/foret-domaniale-pres-de-chez-moi/++cc++${ONF_ID[id]}::jours-chasses.html`:ONF_ALL;
+$("forets").innerHTML=`<p class="warn w-mo" style="font-size:.82rem">Jours donnés à titre indicatif par l'ONF, susceptibles de changer. Fiez-vous toujours aux panneaux posés à l'entrée des zones chassées. Ne couvre pas les bois privés ni les chasses de périphérie.</p>`+D.forets.map(f=>`<div class="fr"><button data-go="${f.lat},${f.lon}"><b>${esc(f.nom)}</b><small>${esc(f.bilan)}</small>${f.id==="alembon"?`<small style="color:#9b1c1c">Bois privés : leurs jours de chasse ne sont pas publiés par l'ONF.</small>`:""}</button><div class="fb"><button class="off" data-off="${f.id}">Hors<br>ligne</button><a class="chasse" href="${chasseUrl(f.id)}" target="_blank" rel="noopener">${ONF_ID[f.id]?"Jours de<br>chasse":"Calendriers<br>ONF"}</a></div></div>`).join("");
 $("forets").querySelectorAll("[data-off]").forEach(b=>b.onclick=()=>{$("s-cou").hidden=true;offline(b.dataset.off)});
 $("forets").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const [a,o]=b.dataset.go.split(",");follow=false;map.setView([+a,+o],14);$("s-cou").hidden=true});
 
