@@ -841,6 +841,31 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 .lp{display:flex;flex-direction:column;gap:6px;min-width:170px}
 .lp button{font:inherit;font-size:.9rem;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px;cursor:pointer;text-align:left}
 .tips{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:.92rem}
+
+.home{position:fixed;inset:0;z-index:1600;display:flex;flex-direction:column;background:linear-gradient(180deg,#2f4a2c 0,#2f4a2c 210px,var(--bg) 210px)}
+.home[hidden]{display:none}
+.hm{flex:1;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px calc(env(safe-area-inset-bottom,0px) + 20px);-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px}
+.hm-top{color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.hm-top h1{margin:0;font-size:1.5rem;cursor:pointer}
+.hm-top p{margin:2px 0 0;color:#cfe0c8;font-size:.9rem}
+.hm-top button{font:inherit;font-weight:700;background:#fff;color:var(--moss);border:0;border-radius:999px;padding:8px 14px;cursor:pointer;flex:0 0 auto}
+.hcard{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.12);padding:14px}
+.hcard h2{margin:0 0 8px;font-size:1.05rem}
+.wx-line{display:flex;gap:12px;align-items:center}
+.wx-big{font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.wx-txt{font-size:.88rem;color:var(--muted)}
+.wx-txt b{color:var(--ink)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#fff;border:0;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:14px 4px;font:inherit;font-size:.82rem;font-weight:700;color:var(--ink);cursor:pointer;min-height:86px;text-align:center}
+.tile .ti{font-size:1.7rem;line-height:1}
+.tile small{font-weight:500;color:var(--muted);font-size:.7rem}
+.tile.big{grid-column:span 3;flex-direction:row;gap:12px;background:var(--moss);color:#fff;min-height:64px;font-size:1.05rem}
+.tile.danger{color:#b03a2e}
+.hm-last{display:flex;flex-direction:column;gap:6px}
+.hm-last button{display:flex;gap:10px;align-items:center;text-align:left;font:inherit;border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer}
+.hm-foot{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--muted)}
+.hm-foot label{display:flex;gap:8px;align-items:center}
+.hm-foot button{font:inherit;border:0;background:none;color:var(--moss);font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -858,7 +883,7 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 <div class="bar">
   <div id="status">Chargement des zones…</div>
   <div class="btns">
-    <button id="b-today"><span class="ic">☀️</span>Aujourd'hui</button>
+    <button id="b-home"><span class="ic">🏠</span>Accueil</button>
     <button id="b-add" class="main"><span class="ic">＋</span>Noter ici</button>
     <button id="b-list"><span class="ic">★</span>Mes coins</button>
     <button id="b-atlas"><span class="ic">📖</span>Atlas</button>
@@ -965,6 +990,28 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
     <div class="tabs" role="tablist"><button data-tab="fiches" aria-selected="true">Fiches</button><button data-tab="planches" aria-selected="false">Planches</button><button data-tab="cle" aria-selected="false">Identifier</button></div>
   </div>
   <div class="at-body" id="at-body"></div>
+</div>
+<div class="home" id="home" hidden>
+ <div class="hm">
+  <div class="hm-top"><div><h1 id="hm-hello">Bonjour 🍄</h1><p id="hm-date"></p></div><button id="hm-map">Carte ›</button></div>
+  <div class="hcard" id="hm-name" hidden><h2>Comment vous appelez-vous ?</h2><p class="note">Pour vous dire bonjour. Le prénom reste sur ce téléphone.</p><div class="row" style="margin-top:8px"><input type="text" id="hm-name-in" placeholder="Votre prénom" autocomplete="given-name" style="flex:2;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:9px 12px"><button class="ok" id="hm-name-ok" style="flex:1">OK</button></div></div>
+  <div class="hcard" id="hm-wx"><h2>Conditions de pousse</h2><div class="wx-txt">Chargement de la météo…</div></div>
+  <div class="hcard"><h2>À chercher en ce moment</h2><div id="hm-top"></div><button class="back" id="hm-more">Voir tout le classement ›</button></div>
+  <div class="tiles">
+   <button class="tile big" id="t-go"><span class="ti">🗺️</span>Ouvrir la carte</button>
+   <button class="tile" id="t-add"><span class="ti">📸</span>Noter un coin</button>
+   <button class="tile" id="t-coins"><span class="ti">⭐</span>Mes coins<small id="t-coins-n"></small></button>
+   <button class="tile" id="t-atlas"><span class="ti">📖</span>Atlas</button>
+   <button class="tile" id="t-id"><span class="ti">🔎</span>Identifier</button>
+   <button class="tile" id="t-car"><span class="ti">🚗</span>Ma voiture<small id="t-car-n"></small></button>
+   <button class="tile danger" id="t-chasse"><span class="ti">🦌</span>Jours de chasse</button>
+   <button class="tile" id="t-forets"><span class="ti">🌳</span>Forêts<small>et hors ligne</small></button>
+   <button class="tile" id="t-thermo"><span class="ti">🌡️</span>Thermomètre</button>
+   <button class="tile" id="t-help"><span class="ti">💡</span>Mode d'emploi</button>
+  </div>
+  <div class="hcard" id="hm-lastc" hidden><h2>Vos derniers coins</h2><div class="hm-last" id="hm-last"></div></div>
+  <div class="hm-foot"><label><input type="checkbox" id="hm-start" checked> Afficher au démarrage</label></div>
+ </div>
 </div>
 <div class="viewer" id="viewer" hidden><img id="viewer-img" alt="Photo du coin"></div>
 
@@ -1507,7 +1554,7 @@ const thermo=L.control({position:"topright"});
 thermo.onAdd=()=>{const d=L.DomUtil.create("div","thermo");d.innerHTML=`<div class="tube"><div class="fill" id="t-fill"></div></div><div class="bulb" id="t-bulb"></div><b id="t-val">–</b><small id="t-lab">Météo…</small>`;L.DomEvent.disableClickPropagation(d);d.onclick=openMeteo;return d};
 thermo.addTo(map);
 function todayIdx(){const t=new Date().toISOString().slice(0,10);let i=WX.daily.time.indexOf(t);return i<0?WX.daily.time.length-8:i}
-function drawThermo(){if(!WX)return;const i=todayIdx(),r=indexAt(SP,i);const c=lvlCol(r.v);
+function drawThermo(){if(!WX)return;if($("home")&&!$("home").hidden&&typeof renderHome==="function")setTimeout(renderHome,0);const i=todayIdx(),r=indexAt(SP,i);const c=lvlCol(r.v);
   $("t-fill").style.height=Math.max(4,r.v)+"%";$("t-fill").style.background=c;$("t-bulb").style.background=c;$("t-val").textContent=r.v;
   let best=i,bv=-1;for(let k=i;k<WX.daily.time.length;k++){const v=indexAt(SP,k).v;if(v>bv){bv=v;best=k}}
   $("t-lab").textContent=r.season===0&&bv<5?"hors saison":bv<25?"pas cette semaine":best===i?"au top aujourd'hui":"mieux : "+dayName(WX.daily.time[best])}
@@ -1655,11 +1702,48 @@ function renderToday(){if(!WX){$("td-wx").textContent="Météo pas encore charg�
   $("td-list").innerHTML=rows.length?rows.map(r=>`<button class="today-row" data-sp="${r.k}"><b><i style="background:${COL[r.k]}"></i>${esc(SPN[r.k])}</b><span class="v" style="color:${lvlCol(r.now)}">${r.now}</span><small>${r.best===i?"Au mieux aujourd'hui":`Encore mieux ${dayName(T[r.best])} (${r.bv})`}${getFinds(r.k).length?` · ${getFinds(r.k).length} lieux connus`:""}</small><small></small><div class="bar2"><span style="width:${Math.max(3,r.now)}%;background:${lvlCol(r.now)}"></span></div></button>`).join(""):`<p class="note">Rien de favorable en ce moment : il faut une bonne pluie.</p>`;
   $("td-list").querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{$("s-today").hidden=true;setSp(b.dataset.sp);goNearest(b.dataset.sp)})}
 function goNearest(sp){const fs=getFinds(sp);if(!fs.length)return;follow=false;if(me){let b=null;fs.forEach(f=>{const d=dist(me,f);if(!b||d<b.d)b={d,f}});map.fitBounds(L.latLngBounds([[me.lat,me.lon],[b.f.lat,b.f.lon]]).pad(.3),{maxZoom:16})}else map.fitBounds(L.latLngBounds(fs.map(f=>[f.lat,f.lon])).pad(.1),{maxZoom:14})}
-$("b-today").onclick=()=>{renderToday();$("s-today").hidden=false};
+
 $("td-close").onclick=()=>$("s-today").hidden=true;
 // ---- Conseils au premier lancement
 if(!LS.get("cu-tips8",0))$("s-tips").hidden=false;
+$("s-tips").style.zIndex=1700;
 $("tips-ok").onclick=()=>{LS.set("cu-tips8",1);$("s-tips").hidden=true};
+
+// ---- Écran d'accueil
+function homeHello(){const h=new Date().getHours(),n=LS.get("cu-name","");$("hm-hello").textContent=(h<5||h>=18?"Bonsoir":"Bonjour")+(n?" "+n:"")+" 🍄";$("hm-name").hidden=!!n||LS.get("cu-name-skip",0)===1;
+  $("hm-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}
+function renderHome(){homeHello();
+  if(WX){const i=todayIdx(),f=factsAt(i),T=WX.daily.time;const rows=Object.keys(MET).filter(k=>SPN[k]).map(k=>indexAt(k,i).v);const best=Math.max(0,...rows);
+    let bd=i,bv=-1;for(let d=i;d<Math.min(T.length,i+7);d++){const v=Math.max(...Object.keys(MET).filter(k=>SPN[k]).map(k=>indexAt(k,d).v));if(v>bv){bv=v;bd=d}}
+    $("hm-wx").innerHTML=`<h2>Conditions de pousse</h2><div class="wx-line"><div class="wx-big" style="color:${lvlCol(best)}">${best}</div><div class="wx-txt">${best>=70?"<b>Très bonne journée</b>":best>=45?"<b>Bonne journée</b>":best>=25?"<b>Possible</b>":"<b>Peu favorable</b>"} pour sortir.<br>Meilleur jour de la semaine : <b>${bd===i?"aujourd'hui":dayName(T[bd])}</b>.<br>Pluie sur 15 jours : ${Math.round(f.rain15)} mm · dernière bonne pluie ${f.last!=null?`il y a ${f.since} j`:"lointaine"} · ${f.t7.toFixed(0)} °C.</div></div>`;
+    const top=Object.keys(MET).filter(k=>SPN[k]).map(k=>{const now=indexAt(k,i).v;let b=i,v2=now;for(let d=i;d<Math.min(T.length,i+4);d++){const v=indexAt(k,d).v;if(v>v2){v2=v;b=d}}return {k,now,bv:v2,b}}).filter(r=>r.bv>0).sort((a,b)=>b.bv-a.bv||b.now-a.now).slice(0,5);
+    $("hm-top").innerHTML=top.length?top.map(r=>`<button class="today-row" data-sp="${r.k}"><b><i style="background:${COL[r.k]}"></i>${esc(SPN[r.k])}</b><span class="v" style="color:${lvlCol(r.now)}">${r.now}</span><small>${r.b===i?"Au mieux aujourd'hui":`Encore mieux ${dayName(T[r.b])} (${r.bv})`}${getFinds(r.k).length?` · ${getFinds(r.k).length} lieux connus`:""}</small><small></small><div class="bar2"><span style="width:${Math.max(3,r.now)}%;background:${lvlCol(r.now)}"></span></div></button>`).join(""):`<p class="note">Rien de favorable en ce moment : il faut une bonne pluie.</p>`;
+    $("hm-top").querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{closeHome();setSp(b.dataset.sp);goNearest(b.dataset.sp)})}
+  else{$("hm-wx").innerHTML=`<h2>Conditions de pousse</h2><div class="wx-txt">Météo indisponible pour l'instant (pas de réseau ?). Elle s'affichera dès la connexion.</div>`;$("hm-top").innerHTML=`<p class="note">Le classement apparaîtra avec la météo.</p>`}
+  const coins=LS.get("cu-finds",[]);$("t-coins-n").textContent=coins.length?coins.length+" enregistré"+(coins.length>1?"s":""):"";
+  $("t-car-n").textContent=CAR?"garée "+new Date(CAR.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+  const last=coins.slice(-3).reverse();$("hm-lastc").hidden=!last.length;
+  $("hm-last").innerHTML=last.map((f,k)=>`<button data-k="${coins.length-1-k}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[f.sp]||"#777"}"></span><span><b>${esc(SPN[f.sp]||"Coin")}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` · pH ${f.ph}`:""}<br><small class="note">${esc(f.note||f.arbre||"")}</small></span></button>`).join("");
+  $("hm-last").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const f=coins[+b.dataset.k];closeHome();follow=false;map.setView([f.lat,f.lon],17)});
+  $("hm-start").checked=LS.get("cu-home",1)!==0}
+function openHome(){renderHome();$("home").hidden=false}
+function closeHome(){$("home").hidden=true;setTimeout(()=>map.invalidateSize(),50)}
+$("b-home").onclick=openHome;
+$("hm-hello").onclick=()=>{$("hm-name-in").value=LS.get("cu-name","");$("hm-name").hidden=false;$("hm-name-in").focus()};
+$("hm-name-ok").onclick=()=>{const v=$("hm-name-in").value.trim().slice(0,30);LS.set("cu-name",v);LS.set("cu-name-skip",v?0:1);homeHello()};
+$("hm-name-in").onkeydown=e=>{if(e.key==="Enter")$("hm-name-ok").click()};
+$("hm-map").onclick=closeHome;$("t-go").onclick=closeHome;
+$("t-add").onclick=()=>{closeHome();$("b-add").click()};
+$("t-coins").onclick=()=>{closeHome();$("b-list").click()};
+$("t-atlas").onclick=()=>{closeHome();setTab("fiches");$("atlas").hidden=false;renderTab()};
+$("t-id").onclick=()=>{closeHome();setTab("cle");$("atlas").hidden=false;renderTab()};
+$("t-car").onclick=()=>{closeHome();$("b-car").click()};
+$("t-chasse").onclick=$("t-forets").onclick=()=>{closeHome();$("s-cou").hidden=false;setTimeout(()=>$("forets").scrollIntoView({block:"start"}),50)};
+$("t-thermo").onclick=()=>{closeHome();openMeteo()};
+$("t-help").onclick=()=>{$("s-tips").hidden=false};
+$("hm-more").onclick=()=>{closeHome();renderToday();$("s-today").hidden=false};
+$("hm-start").onchange=e=>LS.set("cu-home",e.target.checked?1:0);
+if(LS.get("cu-home",1)!==0)openHome();
 
 
 // ---- Cartes hors ligne : précharge Plan IGN + parcelles ONF d'une forêt (zoom 12 à 16)
