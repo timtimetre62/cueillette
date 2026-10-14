@@ -862,6 +862,18 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 .tile.big{grid-column:span 3;flex-direction:row;gap:12px;background:var(--moss);color:#fff;min-height:64px;font-size:1.05rem}
 .tile.danger{color:#b03a2e}
 .hm-last{display:flex;flex-direction:column;gap:6px}
+#rel-steps .rstep{display:flex;flex-direction:row;gap:10px;align-items:center;text-align:left;font-weight:400;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;background:#fff}
+.rstep.done{border-color:var(--moss);background:#f1f6ee}.rstep .rn{flex:0 0 28px;height:28px;border-radius:50%;background:var(--moss);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.rstep .rt{flex:1;display:flex;flex-direction:column}.rstep .rt small{color:var(--muted)}.rstep .rimg{flex:0 0 56px;height:56px;border-radius:8px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden}.rstep .rimg img{width:100%;height:100%;object-fit:cover}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f4f1e8;border-radius:10px;padding:8px 10px;font-size:.9rem}
+#sh-text{font:inherit;font-size:.85rem;border:1px solid var(--line);border-radius:10px;padding:8px;width:100%;box-sizing:border-box}
+.loupe{position:fixed;inset:0;z-index:2100;background:#000}.loupe[hidden]{display:none}
+.loupe video,.loupe canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.loupe video.boost{filter:contrast(1.9) brightness(1.15) saturate(.5)}
+.lp-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 14px;color:#fff;background:linear-gradient(#000a,#0000)}
+.lp-top button{font-size:1.2rem;background:#0009;color:#fff;border:0;border-radius:50%;width:42px;height:42px}
+.lp-bot{position:absolute;left:0;right:0;bottom:0;padding:16px 14px calc(env(safe-area-inset-bottom,0px) + 12px);background:linear-gradient(#0000,#000d);color:#fff}
+.lp-bot p{margin:0 0 8px;font-weight:600;text-shadow:0 1px 3px #000}.lp-bot label{display:flex;gap:10px;align-items:center;font-size:.9rem;margin-bottom:10px}.lp-bot input{flex:1}
 .qty{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}.qty button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:#fff;border-radius:18px;padding:7px 12px;cursor:pointer}.qty button.on{background:var(--moss);color:#fff;border-color:var(--moss)}
 .learn p{margin:6px 0}.learn .lsp{border-left:5px solid #777;padding:4px 0 4px 9px;margin:8px 0}.learn small{color:#666}
 .hm-save{background:#fff4d6;border:1px solid #e0b84a}.pop .pedit{font:inherit;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;margin-top:4px;cursor:pointer}
@@ -960,7 +972,7 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
     <label>pH du sol<input type="text" id="add-ph" inputmode="decimal" autocomplete="off" placeholder="ex. 5,5"></label>
     <label>Arbre dominant<select id="add-arbre"><option value="">—</option><option>Hêtre</option><option>Chêne</option><option>Charme</option><option>Bouleau</option><option>Châtaignier</option><option>Frêne</option><option>Pin</option><option>Épicéa / sapin</option><option>Douglas / mélèze</option><option>Peuplier</option><option>Mélange</option><option>Autre</option></select></label>
   </div>
-  <p class="note" id="ph-hint">Repères : girolles et ch. en tube 4 à 5,5 · cèpes 4,5 à 6,5 · trompettes et pieds de mouton 6 à 7,5 · morilles 7 à 8.</p>
+  <p class="note" id="ph-hint">Repères : girolles et ch. en tube 4 à 5,5 · cèpes 4,5 à 6,5 · trompettes 5 à 7,5 · pieds de mouton 5,5 à 7,5 · morilles 7 à 8.</p>
   <div style="font-weight:600;font-size:.92rem;margin-top:6px">Quantité</div>
   <div class="qty" id="add-qty"><button data-q="0">Rien trouvé</button><button data-q="1">1 ou 2</button><button data-q="2">Une poignée</button><button data-q="3">Un panier</button></div>
   <label>Note (parcelle, sous-bois…)<textarea id="add-note" rows="2" placeholder="Ex. parcelle 23, 12 trompettes sous hêtres, talus nord"></textarea></label>
@@ -982,6 +994,29 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
   <div class="row"><button id="m-close" class="ok">Fermer</button></div>
 </div>
 
+<div class="sheet" id="s-rel" hidden style="max-height:92vh">
+  <h2>Relevé de terrain</h2>
+  <p class="note" id="rel-pos" style="margin:0"></p>
+  <div class="rhead"><span id="rel-head">Boussole inactive</span><button class="back" id="rel-comp" style="margin:0">Activer la boussole</button></div>
+  <p class="note" style="margin:0">Touchez chaque étape pour prendre la photo. Vous pouvez en passer.</p>
+  <div id="rel-steps" style="display:flex;flex-direction:column;gap:6px"></div>
+  <div class="row"><button id="rel-cancel">Annuler</button><button id="rel-next" class="ok">Terminer ›</button></div>
+</div>
+<div class="sheet" id="s-share" hidden style="max-height:92vh">
+  <h2>Envoyer à Claude</h2>
+  <p class="note" style="margin:0">Touchez <b>Envoyer…</b>, puis choisissez l'appli <b>Claude</b> dans la liste (faites défiler si besoin). Les photos et ce texte seront joints : il ne restera qu'à envoyer le message.</p>
+  <textarea id="sh-text" rows="9"></textarea>
+  <p class="note" id="sh-n" style="margin:0"></p>
+  <div class="row"><button id="sh-copy">Copier le texte</button><button id="sh-go" class="ok">Envoyer…</button></div>
+  <div class="row"><button id="sh-close">Fermer</button></div>
+</div>
+<div class="loupe" id="loupe" hidden>
+  <video id="lp-v" playsinline muted autoplay></video><canvas id="lp-c"></canvas>
+  <div class="lp-top"><b>🔦 Loupe à trompettes</b><button id="lp-close" aria-label="Fermer">✕</button></div>
+  <div class="lp-bot"><p id="lp-msg"></p>
+    <label>Sensibilité <input type="range" id="lp-s" min="1" max="5" value="3"></label>
+    <div class="row"><button id="lp-mode">Contraste renforcé</button><button id="lp-snap" class="ok">📸 Noter ici</button></div></div>
+</div>
 <div class="sheet" id="s-learn" hidden>
   <h2>Ce que vos sorties vous apprennent</h2>
   <div class="learn" id="learn"></div>
@@ -1019,6 +1054,8 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
    <button class="tile danger" id="t-chasse"><span class="ti">🦌</span>Jours de chasse</button>
    <button class="tile" id="t-forets"><span class="ti">🌳</span>Forêts<small>et hors ligne</small></button>
    <button class="tile" id="t-thermo"><span class="ti">🌡️</span>Thermomètre</button>
+   <button class="tile" id="t-releve"><span class="ti">📋</span>Relevé<small>de terrain</small></button>
+   <button class="tile" id="t-loupe"><span class="ti">🔦</span>Loupe<small>à trompettes</small></button>
    <button class="tile" id="t-help"><span class="ti">💡</span>Mode d'emploi</button>
   </div>
   <div class="hcard hm-save" id="hm-save" hidden></div>
@@ -1327,7 +1364,7 @@ let SP=LS.get("cu-sp",null)||(()=>{const m=new Date().getMonth();return m>=8?"tr
 
 const map=L.map("map",{zoomControl:true}).setView([50.70,1.80],11);
 const fab=L.control({position:"bottomright"});
-fab.onAdd=()=>{const d=L.DomUtil.create("div","fab");d.innerHTML=`<button id="b-cou" title="Couches et forêts">🗂️</button><button id="b-car" title="Ma voiture">🚗</button><button id="b-gps" title="Me localiser">🎯</button>`;L.DomEvent.disableClickPropagation(d);return d};
+fab.onAdd=()=>{const d=L.DomUtil.create("div","fab");d.innerHTML=`<button id="b-cou" title="Couches et forêts">🗂️</button><button id="b-car" title="Ma voiture">🚗</button><button id="b-loupe" title="Loupe à trompettes">🔦</button><button id="b-gps" title="Me localiser">🎯</button>`;L.DomEvent.disableClickPropagation(d);return d};
 fab.addTo(map);
 map.createPane("parcelles").style.zIndex=350;
 map.createPane("zones").style.zIndex=380;
@@ -1505,20 +1542,20 @@ const phCol=v=>v==null||v===""?null:v<4.5?"#c0392b":v<5.5?"#e67e22":v<6.5?"#c9a2
 const mine=L.layerGroup().addTo(map);
 const QTY=["Rien trouvé","1 ou 2","Une poignée","Un panier"];
 const qtxt=f=>f.q!=null&&f.q!==""?QTY[f.q]:"";
-function popMine(f,i){return `<div class="pop"><h3>${f.sp==="mesure"?"Mesure de pH":SPN[f.sp]+" (mon coin)"}</h3><p>${new Date(f.t).toLocaleDateString("fr-FR")}${qtxt(f)?` · ${qtxt(f)}`:""}${f.ph!=null&&f.ph!==""?` · <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}${f.arbre?` · ${esc(f.arbre)}`:""}</p><p>${esc(f.note)}</p><div class="ph" data-ph="${(f.photos||[]).join(",")}"></div><div class="links"><a href="${gmaps(f.lat,f.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(f.lat,f.lon,"Mon coin")}</div><button class="pedit" data-edit="${i}">✏️ Modifier</button></div>`}
+function popMine(f,i){return `<div class="pop"><h3>${f.sp==="mesure"?"Mesure de pH":SPN[f.sp]+" (mon coin)"}</h3><p>${new Date(f.t).toLocaleDateString("fr-FR")}${qtxt(f)?` · ${qtxt(f)}`:""}${f.ph!=null&&f.ph!==""?` · <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}${f.arbre?` · ${esc(f.arbre)}`:""}</p><p>${esc(f.note)}</p><div class="ph" data-ph="${(f.photos||[]).join(",")}"></div><div class="links"><a href="${gmaps(f.lat,f.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(f.lat,f.lon,"Mon coin")}</div><button class="pedit" data-edit="${i}">✏️ Modifier</button> <button class="pedit" data-share="${i}">💬 Envoyer à Claude</button></div>`}
 function drawMine(){mine.clearLayers();LS.get("cu-finds",[]).forEach((f,i)=>{const hasPh=f.ph!=null&&f.ph!=="";
   L.marker([f.lat,f.lon],{icon:pin(f.sp==="mesure"?phCol(f.ph):COL[f.sp]||"#777",hasPh?24:18,hasPh?String(f.ph).replace(".",","):"★","50%")}).addTo(mine).bindPopup(popMine(f,i))})}
 async function fillPhotos(root){for(const d of root.querySelectorAll("[data-ph]")){const ids=d.dataset.ph?d.dataset.ph.split(","):[];d.innerHTML="";for(const id of ids){const u=await photoURL(id);if(!u)continue;const im=document.createElement("img");im.src=u;im.onclick=()=>{$("viewer-img").src=u;$("viewer").hidden=false};d.appendChild(im)}}}
-map.on("popupopen",e=>{const el=e.popup.getElement();fillPhotos(el);el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{map.closePopup();openEdit(+b.dataset.edit)})});
+map.on("popupopen",e=>{const el=e.popup.getElement();fillPhotos(el);el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{map.closePopup();openEdit(+b.dataset.edit)});el.querySelectorAll("[data-share]").forEach(b=>b.onclick=()=>{map.closePopup();openShare(+b.dataset.share)})});
 $("viewer").onclick=()=>$("viewer").hidden=true;
 let pending=null,draft=[];
 function drawDraft(){$("add-photos").innerHTML="";draft.forEach((p,i)=>{const d=document.createElement("div");d.innerHTML=`<img src="${p.url}" alt=""><button aria-label="Retirer">✕</button>`;d.querySelector("button").onclick=()=>{draft.splice(i,1);drawDraft()};$("add-photos").appendChild(d)})}
 async function addFiles(files){for(const f of files){try{const b=await shrink(f);draft.push({blob:b,url:URL.createObjectURL(b)})}catch(e){status("Photo illisible.")}}drawDraft()}
 $("add-cam").onchange=e=>{addFiles([...e.target.files]);e.target.value=""};$("add-gal").onchange=e=>{addFiles([...e.target.files]);e.target.value=""};
-let editIdx=null,qSel=null;
+let editIdx=null,qSel=null,relMode=false;
 function setQ(q){qSel=q;$("add-qty").querySelectorAll("button").forEach(b=>b.classList.toggle("on",String(q)===b.dataset.q))}
 $("add-qty").querySelectorAll("button").forEach(b=>b.onclick=()=>setQ(String(qSel)===b.dataset.q?null:+b.dataset.q));
-function resetAdd(){editIdx=null;$("add-title").textContent="Noter un coin";$("add-ok").textContent="Enregistrer";$("add-move").hidden=true;$("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";setQ(null);draft=[];drawDraft();$("s-add").hidden=false}
+function resetAdd(){editIdx=null;relMode=false;$("add-title").textContent="Noter un coin";$("add-ok").textContent="Enregistrer";$("add-move").hidden=true;$("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";setQ(null);draft=[];drawDraft();$("s-add").hidden=false}
 function openAdd(pos,txt){pending=pos;$("add-pos").textContent=txt;resetAdd()}
 $("b-add").onclick=()=>{if(me){pending={lat:me.lat,lon:me.lon};$("add-pos").textContent=`À votre position GPS (± ${me.acc} m).`}else{const c=map.getCenter();pending={lat:c.lat,lon:c.lng};$("add-pos").textContent="GPS inactif : le coin sera placé au centre de la carte. Astuce : appui long sur la carte pour choisir l'endroit."}
   resetAdd()};
@@ -1528,20 +1565,22 @@ async function openEdit(i){const f=LS.get("cu-finds",[])[i];if(!f)return;$("s-li
   $("add-move").hidden=!me;$("add-sp").value=f.sp;$("add-note").value=f.note||"";$("add-ph").value=f.ph!=null&&f.ph!==""?String(f.ph).replace(".",","):"";$("add-arbre").value=f.arbre||"";setQ(f.q!=null&&f.q!==""?f.q:null);
   draft=[];for(const id of (f.photos||[])){const u=await photoURL(id);if(u)draft.push({id,url:u})}drawDraft();$("s-add").hidden=false}
 $("add-move").onclick=()=>{if(!me)return;pending={lat:me.lat,lon:me.lon};$("add-pos").textContent=`Sera replacé à votre position GPS actuelle (± ${me.acc} m).`;$("add-move").hidden=true};
-$("add-cancel").onclick=()=>{draft=[];editIdx=null;$("s-add").hidden=true};
+$("add-cancel").onclick=()=>{draft=[];editIdx=null;relMode=false;$("s-add").hidden=true};
 $("add-ok").onclick=async()=>{const ids=[];try{for(const p of draft){if(p.id){ids.push(p.id);continue}const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await putPhoto(id,p.blob);ids.push(id)}}catch(e){status("Photos non enregistrées (stockage indisponible).")}
   let ph=$("add-ph").value.replace(",",".");ph=ph===""?null:Math.round(parseFloat(ph)*10)/10;if(ph!=null&&(isNaN(ph)||ph<2||ph>10))ph=null;
-  const l=LS.get("cu-finds",[]);const vals={sp:$("add-sp").value,note:$("add-note").value.trim(),ph,arbre:$("add-arbre").value,q:qSel,photos:ids};let msg;
+  const l=LS.get("cu-finds",[]);const vals={sp:$("add-sp").value,note:$("add-note").value.trim(),ph,arbre:$("add-arbre").value,q:qSel,photos:ids,lab:draft.map(p=>p.lab||"")};if(!vals.lab.some(Boolean))delete vals.lab;let msg;
   if(editIdx!=null&&l[editIdx]){const old=l[editIdx];for(const id of (old.photos||[]))if(!ids.includes(id))try{await delPhoto(id)}catch(e){}
     const moved=old.lat!==pending.lat||old.lon!==pending.lon;l[editIdx]={...old,...pending,...vals};if(moved)delete l[editIdx].wx;msg="Coin modifié."}
   else{l.push({...pending,...vals,t:Date.now()});msg=`Coin enregistré${ids.length?` avec ${ids.length} photo${ids.length>1?"s":""}`:""}.`}
   LS.set("cu-finds",l);const wasEdit=editIdx!=null;editIdx=null;draft=[];drawMine();$("s-add").hidden=true;
   const un=unsaved();status(msg+(un>=10?` <b>${un} coins pas encore sauvegardés</b> : pensez à faire une sauvegarde (★ Mes coins).`:""));
-  if(wasEdit&&!$("home").hidden)renderHome();fillCoinWx()};
-function renderList(){const l=LS.get("cu-finds",[]);$("list").innerHTML=l.length?l.map((f,i)=>`<div class="find"><div class="fi"><div data-ph="${(f.photos||[]).slice(0,1).join(",")}"></div><div><b>${f.sp==="mesure"?"Mesure":SPN[f.sp]}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}<small>${esc([qtxt(f),f.arbre,f.note].filter(Boolean).join(" · "))}</small><small>${(f.photos||[]).length} photo(s) · ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)}</small></div></div><div class="row" style="flex:0 0 auto;flex-direction:column"><button data-go="${i}">Voir</button><button data-edit="${i}">Modifier</button><button data-del="${i}">Suppr.</button></div></div>`).reverse().join(""):`<p class="note">Aucun coin pour l'instant. Touchez « Noter ici » sur place.</p>`;
+  if(wasEdit&&!$("home").hidden)renderHome();
+  if(relMode&&!wasEdit){relMode=false;openShare(l.length-1)}else fillCoinWx()};
+function renderList(){const l=LS.get("cu-finds",[]);$("list").innerHTML=l.length?l.map((f,i)=>`<div class="find"><div class="fi"><div data-ph="${(f.photos||[]).slice(0,1).join(",")}"></div><div><b>${f.sp==="mesure"?"Mesure":SPN[f.sp]}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}<small>${esc([qtxt(f),f.arbre,f.note].filter(Boolean).join(" · "))}</small><small>${(f.photos||[]).length} photo(s) · ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)}</small></div></div><div class="row" style="flex:0 0 auto;flex-direction:column"><button data-go="${i}">Voir</button><button data-edit="${i}">Modifier</button><button data-share="${i}">Claude</button><button data-del="${i}">Suppr.</button></div></div>`).reverse().join(""):`<p class="note">Aucun coin pour l'instant. Touchez « Noter ici » sur place.</p>`;
   fillPhotos($("list"));
   $("list").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const f=LS.get("cu-finds",[])[+b.dataset.go];follow=false;map.setView([f.lat,f.lon],17);$("s-list").hidden=true});
   $("list").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEdit(+b.dataset.edit));
+  $("list").querySelectorAll("[data-share]").forEach(b=>b.onclick=()=>{$("s-list").hidden=true;openShare(+b.dataset.share)});
   $("list").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(b.dataset.armed){const l=LS.get("cu-finds",[]);const [f]=l.splice(+b.dataset.del,1);LS.set("cu-finds",l);for(const id of (f.photos||[]))try{await delPhoto(id)}catch(e){}drawMine();renderList()}else{b.dataset.armed=1;b.textContent="Confirmer"}})}
 $("b-list").onclick=()=>{renderList();$("s-list").hidden=false};$("list-close").onclick=()=>$("s-list").hidden=true;
 const b2d=b=>new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(b)});
@@ -1792,6 +1831,86 @@ function revisit(){const l=LS.get("cu-finds",[]),now=new Date(),y=now.getFullYea
     if(d.getFullYear()<y){let dd=doy(d)-td;if(dd>=-10&&dd<=30)out.push({f,i,w:dd<=0?`trouvé à cette période en ${d.getFullYear()}`:`trouvé vers le ${d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})} ${d.getFullYear()}`,s:10-Math.abs(dd)/5+(f.q||1)})}
     else if(WX&&now-d>5*864e5&&MET[f.sp]){const v=indexAt(f.sp,todayIdx()).v;if(v>=45)out.push({f,i,w:`conditions bonnes aujourd'hui (${v}), trouvé le ${d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}`,s:v/20+(f.q||1)})}});
   const seen=new Set();return out.sort((a,b)=>b.s-a.s).filter(o=>{const k=o.f.sp+Math.round(o.f.lat*500)+"|"+Math.round(o.f.lon*500);if(seen.has(k))return false;seen.add(k);return true}).slice(0,4)}
+
+// ---- Relevé de terrain guidé
+const REL=[["Nord","Face au nord, debout : le sous-bois",0],["Est","Tournez-vous vers l'est",90],["Sud","Vers le sud",180],["Ouest","Vers l'ouest",270],["Sol","Le sol de près (1 m) : feuilles, plantes, mousse"],["Arbre","L'écorce et les feuilles de l'arbre le plus proche"],["Feuillage","Vers le haut : le feuillage au-dessus"]];
+let relShots=[],relPos=null,relTimer=null;
+function renderRel(){$("rel-steps").innerHTML=REL.map(([n,h],i)=>`<label class="rstep${relShots[i]?" done":""}"><span class="rn">${relShots[i]?"✓":i+1}</span><span class="rt"><b>${n}</b><small>${h}</small></span><span class="rimg">${relShots[i]?`<img src="${relShots[i].url}" alt="">`:"📷"}</span><input type="file" accept="image/*" capture="environment" hidden data-i="${i}"></label>`).join("");
+  $("rel-steps").querySelectorAll("input").forEach(inp=>inp.onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const b=await shrink(f);relShots[+inp.dataset.i]={blob:b,url:URL.createObjectURL(b),lab:REL[+inp.dataset.i][0]};renderRel()}catch(err){status("Photo illisible.")}});
+  const n=relShots.filter(Boolean).length;$("rel-next").textContent=n?`Terminer (${n} photo${n>1?"s":""}) ›`:"Terminer ›"}
+function relHead(){const k=relShots.findIndex(x=>!x);const st=REL[k];
+  if(HEAD==null){$("rel-head").textContent="Boussole inactive";$("rel-comp").hidden=false;return}$("rel-comp").hidden=true;
+  let t=`Vous regardez vers le ${dir(HEAD)} (${Math.round(HEAD)}°)`;if(st&&st[2]!=null){const dd=((st[2]-HEAD+540)%360)-180;t+=Math.abs(dd)<20?` · ✓ bien face au ${st[0].toLowerCase()}`:` · tournez ${dd>0?"à droite":"à gauche"} de ${Math.round(Math.abs(dd))}°`}$("rel-head").textContent=t}
+function openRel(){relShots=REL.map(()=>null);if(me)relPos={lat:me.lat,lon:me.lon};else{const c=map.getCenter();relPos={lat:c.lat,lon:c.lng}}
+  $("rel-pos").textContent=me?`Relevé à votre position GPS (± ${me.acc} m).`:"GPS inactif : le relevé sera placé au centre de la carte. Activez 🎯 pour plus de précision.";
+  renderRel();$("s-rel").hidden=false;relHead();clearInterval(relTimer);relTimer=setInterval(relHead,400)}
+function closeRel(){clearInterval(relTimer);$("s-rel").hidden=true}
+$("rel-comp").onclick=()=>enableCompass().then(relHead);
+$("rel-cancel").onclick=()=>{relShots=[];closeRel()};
+$("rel-next").onclick=()=>{closeRel();openAdd(relPos,`Relevé de terrain${me?` (GPS ± ${me.acc} m)`:""}. Choisissez l'espèce cherchée et le résultat.`);
+  relMode=true;$("add-title").textContent="Terminer le relevé";$("add-ok").textContent="Enregistrer et envoyer à Claude";draft=relShots.filter(Boolean);drawDraft()};
+
+// ---- Envoyer un coin à Claude (partage iPhone / Android)
+let shFiles=[];
+function shareText(f){const d=new Date(f.t);const fo=D.forets.map(x=>({x,d:dist(f,x)})).sort((a,b)=>a.d-b.d)[0];
+  const o=[f.lab?"Relevé de terrain (appli Cueillette Côte d'Opale)":"Coin noté avec l'appli Cueillette Côte d'Opale",
+    `Date : ${d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} à ${d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`,
+    `Position GPS : ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)}${fo?` (${fo.x.nom}, ${fmt(fo.d)} du centre)`:""}`,
+    `Espèce ${f.q===0?"cherchée":"notée"} : ${SPN[f.sp]||f.sp}${qtxt(f)?` · ${qtxt(f)}`:""}`];
+  if(f.arbre)o.push(`Arbre dominant : ${f.arbre}`);if(f.ph!=null&&f.ph!=="")o.push(`pH du sol : ${String(f.ph).replace(".",",")}`);
+  if(f.wx)o.push(`Météo avant : ${f.wx.r15} mm de pluie sur 15 jours, ${f.wx.since!=null?`dernière bonne pluie ${f.wx.since} j avant`:"pas de bonne pluie récente"}, ${String(f.wx.t7).replace(".",",")} °C en moyenne${f.wx.frost?", gel récent":""}`);
+  if(f.note)o.push(`Note : ${f.note}`);
+  const lab=f.lab||[],np=(f.photos||[]).length;if(np)o.push(`Photos : ${(f.photos||[]).map((_,k)=>`${k+1}. ${lab[k]||"photo"}`).join(", ")}`);
+  o.push("",f.lab?"Peux-tu analyser ce milieu (arbres, plantes indicatrices, sol, humidité), me dire s'il est favorable à cette espèce, et dans quelle direction chercher autour ?":"Peux-tu regarder ces photos et me dire ce que tu en penses ?");
+  return o.join("\n")}
+async function openShare(i){const l=LS.get("cu-finds",[]),f=l[i];if(!f)return;shFiles=[];$("sh-go").disabled=true;$("sh-n").textContent="Préparation des photos…";$("sh-text").value=shareText(f);$("s-share").hidden=false;
+  if(!f.wx&&f.sp!=="mesure"&&navigator.onLine){try{const w=await coinWx(f);if(w){f.wx=w;const cur=LS.get("cu-finds",[]);const k=cur.findIndex(x=>coinKey(x)===coinKey(f));if(k>=0){cur[k].wx=w;LS.set("cu-finds",cur)}$("sh-text").value=shareText(f)}}catch(e){}}
+  const lab=f.lab||[];for(const [k,id] of (f.photos||[]).entries()){try{const b=await getPhoto(id);if(b)shFiles.push(new File([b],`${k+1}-${(lab[k]||"photo").toLowerCase()}.jpg`,{type:"image/jpeg"}))}catch(e){}}
+  $("sh-n").textContent=shFiles.length?`${shFiles.length} photo${shFiles.length>1?"s":""} prête${shFiles.length>1?"s":""}.`:"Pas de photo : seul le texte sera envoyé.";$("sh-go").disabled=false}
+$("sh-go").onclick=()=>{const text=$("sh-text").value,data=shFiles.length?{files:shFiles,text}:{text};
+  if(navigator.canShare&&navigator.canShare(data)){navigator.share(data).catch(()=>{})}
+  else if(navigator.share){navigator.share({text}).catch(()=>{});if(shFiles.length)status("Ce téléphone ne permet pas de joindre les photos automatiquement : ajoutez-les depuis la galerie dans l'appli Claude.")}
+  else{$("sh-copy").click()}};
+$("sh-copy").onclick=async()=>{try{await navigator.clipboard.writeText($("sh-text").value);status("Texte copié : collez-le dans l'appli Claude avec vos photos.")}catch(e){$("sh-text").select();status("Sélectionnez le texte et copiez-le.")}};
+$("sh-close").onclick=()=>{$("s-share").hidden=true;fillCoinWx();if(!$("home").hidden)renderHome()};
+
+// ---- Loupe à trompettes : repère les taches très sombres dans la litière (traitement sur le téléphone, sans réseau)
+const AW=192;let lpStream=null,lpRun=false,lpBlobs=[],lpPrev=[],lpT=0;const lpCv=document.createElement("canvas"),lpCtx=lpCv.getContext("2d",{willReadFrequently:true});
+function lpDetect(){const v=$("lp-v");if(!v.videoWidth)return[];const AH=Math.round(AW*v.videoHeight/v.videoWidth);lpCv.width=AW;lpCv.height=AH;lpCtx.drawImage(v,0,0,AW,AH);
+  const d=lpCtx.getImageData(0,0,AW,AH).data,N=AW*AH,Lm=new Float32Array(N),S=new Uint8Array(N);
+  for(let i=0,j=0;i<N;i++,j+=4){const r=d[j],g=d[j+1],b=d[j+2];Lm[i]=.299*r+.587*g+.114*b;S[i]=Math.max(r,g,b)-Math.min(r,g,b)}
+  const W1=AW+1,I=new Float64Array(W1*(AH+1));for(let y=0;y<AH;y++){let row=0;for(let x=0;x<AW;x++){row+=Lm[y*AW+x];I[(y+1)*W1+x+1]=I[y*W1+x+1]+row}}
+  const R=12,sens=+$("lp-s").value,ratio=.36+.05*sens,abs=32+7*sens,M=new Uint8Array(N);
+  for(let y=0;y<AH;y++){const y0=Math.max(0,y-R),y1=Math.min(AH,y+R+1);for(let x=0;x<AW;x++){const i=y*AW+x;if(Lm[i]>=abs||S[i]>=55)continue;
+    const x0=Math.max(0,x-R),x1=Math.min(AW,x+R+1),mean=(I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((x1-x0)*(y1-y0));if(mean>45&&Lm[i]<mean*ratio)M[i]=1}}
+  const lab=new Int32Array(N),out=[],st=[];let id=0;
+  for(let i=0;i<N;i++){if(!M[i]||lab[i])continue;id++;let a=0,sx=0,sy=0,mnx=1e9,mny=1e9,mxx=-1,mxy=-1,sl=0;st.push(i);lab[i]=id;
+    while(st.length){const k=st.pop(),x=k%AW,y=(k-x)/AW;a++;sx+=x;sy+=y;sl+=Lm[k];if(x<mnx)mnx=x;if(x>mxx)mxx=x;if(y<mny)mny=y;if(y>mxy)mxy=y;
+      if(x>0&&M[k-1]&&!lab[k-1]){lab[k-1]=id;st.push(k-1)}if(x<AW-1&&M[k+1]&&!lab[k+1]){lab[k+1]=id;st.push(k+1)}
+      if(y>0&&M[k-AW]&&!lab[k-AW]){lab[k-AW]=id;st.push(k-AW)}if(y<AH-1&&M[k+AW]&&!lab[k+AW]){lab[k+AW]=id;st.push(k+AW)}}
+    const w=mxx-mnx+1,h=mxy-mny+1;
+    if(a>=5&&a<=N*.004&&Math.max(w,h)<=20&&a/(w*h)>.4&&Math.max(w,h)/Math.min(w,h)<3&&mnx>0&&mny>0&&mxx<AW-1&&mxy<AH-1)out.push({x:sx/a/AW,y:sy/a/AH,r:(Math.max(w,h)/2+2)/AW,dark:sl/a})}
+  const c=$("lp-c"),W=c.clientWidth||AW,H=c.clientHeight||AH,sc=Math.max(W/v.videoWidth,H/v.videoHeight),vx=W/(v.videoWidth*sc),vy=H/(v.videoHeight*sc);
+  return out.filter(o=>Math.abs(o.x-.5)<vx/2-.01&&Math.abs(o.y-.5)<vy/2-.01).sort((p,q)=>p.dark-q.dark).slice(0,6)}
+function lpDraw(){const c=$("lp-c"),v=$("lp-v"),W=c.clientWidth,H=c.clientHeight,dpr=devicePixelRatio||1;if(c.width!==Math.round(W*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr)}
+  const g=c.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);if(!v.videoWidth)return;
+  const sc=Math.max(W/v.videoWidth,H/v.videoHeight),dw=v.videoWidth*sc,dh=v.videoHeight*sc,ox=(W-dw)/2,oy=(H-dh)/2;
+  for(const b of lpBlobs){g.beginPath();g.arc(ox+b.x*dw,oy+b.y*dh,Math.min(60,Math.max(16,b.r*dw*1.1)),0,7);g.lineWidth=b.ok?3.5:1.5;g.setLineDash(b.ok?[]:[5,5]);g.strokeStyle=b.ok?"#ffd23f":"rgba(255,255,255,.7)";g.stroke()}}
+function lpLoop(t){if(!lpRun)return;requestAnimationFrame(lpLoop);if(t-lpT<130)return;lpT=t;
+  try{const bl=lpDetect();bl.forEach(b=>b.ok=lpPrev.some(p=>Math.hypot(p.x-b.x,p.y-b.y)<.035));lpPrev=bl;lpBlobs=bl;const n=bl.filter(b=>b.ok).length;
+    $("lp-msg").textContent=n?`${n} tache${n>1?"s":""} sombre${n>1?"s":""} à regarder de plus près (cercles jaunes).`:"Visez le sol à 1 ou 2 m devant vous, sans le ciel. Avancez lentement."}catch(e){}
+  lpDraw()}
+async function openLoupe(){closeHome();$("loupe").hidden=false;$("lp-msg").textContent="Ouverture de la caméra…";
+  try{lpStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false});
+    const v=$("lp-v");v.srcObject=lpStream;await v.play();lpRun=true;lpPrev=[];requestAnimationFrame(lpLoop)}
+  catch(e){$("lp-msg").textContent="Caméra inaccessible. Autorisez la caméra pour cette appli (sur iPhone : Réglages › Safari › Caméra › Autoriser), puis réessayez."}}
+function closeLoupe(){lpRun=false;if(lpStream)lpStream.getTracks().forEach(t=>t.stop());lpStream=null;$("lp-v").srcObject=null;$("loupe").hidden=true;lpBlobs=[];lpPrev=[]}
+$("lp-close").onclick=closeLoupe;
+$("lp-mode").onclick=()=>{const on=$("lp-v").classList.toggle("boost");$("lp-mode").textContent=on?"Image normale":"Contraste renforcé"};
+$("lp-snap").onclick=async()=>{const v=$("lp-v");if(!v.videoWidth)return;const c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;const g=c.getContext("2d");g.drawImage(v,0,0);
+  g.lineWidth=Math.max(3,c.width/250);g.strokeStyle="#ffd23f";for(const b of lpBlobs.filter(b=>b.ok)){g.beginPath();g.arc(b.x*c.width,b.y*c.height,Math.max(20,b.r*c.width*1.4),0,7);g.stroke()}
+  const blob=await new Promise(ok=>c.toBlob(ok,"image/jpeg",.85));closeLoupe();$("b-add").click();$("add-sp").value="trompette";draft=[{blob,url:URL.createObjectURL(blob),lab:"Loupe"}];drawDraft()};
+$("b-loupe").onclick=openLoupe;
 // ---- Écran d'accueil
 function homeHello(){const h=new Date().getHours(),n=LS.get("cu-name","");$("hm-hello").textContent=(h<5||h>=18?"Bonsoir":"Bonjour")+(n?" "+n:"")+" 🍄";$("hm-name").hidden=!!n||LS.get("cu-name-skip",0)===1;
   $("hm-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}
@@ -1830,6 +1949,8 @@ $("t-id").onclick=()=>{closeHome();setTab("cle");$("atlas").hidden=false;renderT
 $("t-car").onclick=()=>{closeHome();$("b-car").click()};
 $("t-chasse").onclick=$("t-forets").onclick=()=>{closeHome();$("s-cou").hidden=false;setTimeout(()=>$("forets").scrollIntoView({block:"start"}),50)};
 $("t-thermo").onclick=()=>{closeHome();openMeteo()};
+$("t-releve").onclick=()=>{closeHome();openRel()};
+$("t-loupe").onclick=openLoupe;
 $("t-help").onclick=()=>{$("s-tips").hidden=false};
 $("hm-learn-more").onclick=()=>{closeHome();renderLearn();$("s-learn").hidden=false};
 $("hm-more").onclick=()=>{closeHome();renderToday();$("s-today").hidden=false};

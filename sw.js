@@ -1,4 +1,4 @@
-const SHELL="cueillette-app-v15", TILES="cueillette-tuiles";
+const SHELL="cueillette-app-v16", TILES="cueillette-tuiles";
 const FILES=["./","index.html","manifest.webmanifest","icone2-180.png","icone2-192.png","icone2-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(SHELL).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==SHELL&&n!==TILES&&n!=="cueillette-photos").map(n=>caches.delete(n)))).then(()=>self.clients.claim()))});
