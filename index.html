@@ -862,6 +862,9 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 .tile.big{grid-column:span 3;flex-direction:row;gap:12px;background:var(--moss);color:#fff;min-height:64px;font-size:1.05rem}
 .tile.danger{color:#b03a2e}
 .hm-last{display:flex;flex-direction:column;gap:6px}
+.qty{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}.qty button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:#fff;border-radius:18px;padding:7px 12px;cursor:pointer}.qty button.on{background:var(--moss);color:#fff;border-color:var(--moss)}
+.learn p{margin:6px 0}.learn .lsp{border-left:5px solid #777;padding:4px 0 4px 9px;margin:8px 0}.learn small{color:#666}
+.hm-save{background:#fff4d6;border:1px solid #e0b84a}.pop .pedit{font:inherit;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;margin-top:4px;cursor:pointer}
 .hm-last button{display:flex;gap:10px;align-items:center;text-align:left;font:inherit;border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer}
 .hm-foot{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--muted)}
 .hm-foot label{display:flex;gap:8px;align-items:center}
@@ -951,14 +954,16 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 
 <div class="sheet" id="s-add" hidden>
   <h2 id="add-title">Noter un coin</h2>
-  <p class="note" id="add-pos"></p>
+  <p class="note" id="add-pos"></p><button id="add-move" class="back" hidden style="margin:-4px 0 6px">📍 Replacer à ma position GPS actuelle</button>
   <label>Espèce<select id="add-sp"><option value="cepe">Cèpe</option><option value="girolle">Girolle</option><option value="trompette">Trompette des morts</option><option value="tube">Chanterelle en tube</option><option value="pied">Pied de mouton</option><option value="morille">Morille</option><option value="autre">Autre / à revoir</option><option value="mesure">Mesure de pH seule</option></select></label>
   <div class="row2">
     <label>pH du sol<input type="text" id="add-ph" inputmode="decimal" autocomplete="off" placeholder="ex. 5,5"></label>
     <label>Arbre dominant<select id="add-arbre"><option value="">—</option><option>Hêtre</option><option>Chêne</option><option>Charme</option><option>Bouleau</option><option>Châtaignier</option><option>Frêne</option><option>Pin</option><option>Épicéa / sapin</option><option>Douglas / mélèze</option><option>Peuplier</option><option>Mélange</option><option>Autre</option></select></label>
   </div>
   <p class="note" id="ph-hint">Repères : girolles et ch. en tube 4 à 5,5 · cèpes 4,5 à 6,5 · trompettes et pieds de mouton 6 à 7,5 · morilles 7 à 8.</p>
-  <label>Note (parcelle, quantité, sous-bois…)<textarea id="add-note" rows="2" placeholder="Ex. parcelle 23, 12 trompettes sous hêtres, talus nord"></textarea></label>
+  <div style="font-weight:600;font-size:.92rem;margin-top:6px">Quantité</div>
+  <div class="qty" id="add-qty"><button data-q="0">Rien trouvé</button><button data-q="1">1 ou 2</button><button data-q="2">Une poignée</button><button data-q="3">Un panier</button></div>
+  <label>Note (parcelle, sous-bois…)<textarea id="add-note" rows="2" placeholder="Ex. parcelle 23, 12 trompettes sous hêtres, talus nord"></textarea></label>
   <div class="photos" id="add-photos"></div>
   <div class="row"><label class="btnfile">📷 Prendre une photo<input type="file" id="add-cam" accept="image/*" capture="environment" hidden></label><label class="btnfile">🖼 Depuis la galerie<input type="file" id="add-gal" accept="image/*" multiple hidden></label></div>
   <div class="row"><button id="add-cancel">Annuler</button><button id="add-ok" class="ok">Enregistrer</button></div>
@@ -977,11 +982,18 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
   <div class="row"><button id="m-close" class="ok">Fermer</button></div>
 </div>
 
+<div class="sheet" id="s-learn" hidden>
+  <h2>Ce que vos sorties vous apprennent</h2>
+  <div class="learn" id="learn"></div>
+  <p class="note">Calculé uniquement à partir de vos coins enregistrés sur ce téléphone, avec la météo des jours précédant chaque trouvaille. Plus vous notez de sorties, y compris quand vous ne trouvez rien, plus c'est fiable.</p>
+  <div class="row"><button id="learn-close" class="ok">Fermer</button></div>
+</div>
 <div class="sheet" id="s-list" hidden>
   <h2>Mes coins</h2>
   <div id="list"></div>
   <p class="note">Enregistrés sur ce téléphone uniquement. Faites une sauvegarde de temps en temps : elle contient aussi les photos et peut m'être envoyée.</p>
   <div class="row"><button id="list-save" class="ok">Sauvegarder / partager</button><label class="btnfile">Restaurer<input type="file" id="list-restore" accept=".json,application/json" hidden></label></div>
+  <div class="row"><button id="list-learn">📈 Ce que j'apprends</button></div>
   <div class="row"><button id="list-gpx">Exporter GPX (sans photos)</button><button id="list-close">Fermer</button></div>
 </div>
 <div class="atlas" id="atlas" hidden>
@@ -1009,6 +1021,9 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
    <button class="tile" id="t-thermo"><span class="ti">🌡️</span>Thermomètre</button>
    <button class="tile" id="t-help"><span class="ti">💡</span>Mode d'emploi</button>
   </div>
+  <div class="hcard hm-save" id="hm-save" hidden></div>
+  <div class="hcard" id="hm-revc" hidden><h2>À revisiter</h2><div class="hm-last" id="hm-rev"></div></div>
+  <div class="hcard" id="hm-learnc" hidden><h2>Ce que vos sorties vous apprennent</h2><div class="learn" id="hm-learn"></div><button class="back" id="hm-learn-more">Tout voir ›</button></div>
   <div class="hcard" id="hm-lastc" hidden><h2>Vos derniers coins</h2><div class="hm-last" id="hm-last"></div></div>
   <div class="hm-foot"><label><input type="checkbox" id="hm-start" checked> Afficher au démarrage</label></div>
  </div>
@@ -1488,41 +1503,62 @@ async function shrink(file){let img;try{img=await createImageBitmap(file,{imageO
   return new Promise(ok=>c.toBlob(ok,"image/jpeg",.8))}
 const phCol=v=>v==null||v===""?null:v<4.5?"#c0392b":v<5.5?"#e67e22":v<6.5?"#c9a227":v<7.5?"#2e8b57":"#2c6fbb";
 const mine=L.layerGroup().addTo(map);
-function popMine(f){return `<div class="pop"><h3>${f.sp==="mesure"?"Mesure de pH":SPN[f.sp]+" (mon coin)"}</h3><p>${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` · <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}${f.arbre?` · ${esc(f.arbre)}`:""}</p><p>${esc(f.note)}</p><div class="ph" data-ph="${(f.photos||[]).join(",")}"></div><div class="links"><a href="${gmaps(f.lat,f.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(f.lat,f.lon,"Mon coin")}</div></div>`}
-function drawMine(){mine.clearLayers();LS.get("cu-finds",[]).forEach(f=>{const hasPh=f.ph!=null&&f.ph!=="";
-  L.marker([f.lat,f.lon],{icon:pin(f.sp==="mesure"?phCol(f.ph):COL[f.sp]||"#777",hasPh?24:18,hasPh?String(f.ph).replace(".",","):"★","50%")}).addTo(mine).bindPopup(popMine(f))})}
+const QTY=["Rien trouvé","1 ou 2","Une poignée","Un panier"];
+const qtxt=f=>f.q!=null&&f.q!==""?QTY[f.q]:"";
+function popMine(f,i){return `<div class="pop"><h3>${f.sp==="mesure"?"Mesure de pH":SPN[f.sp]+" (mon coin)"}</h3><p>${new Date(f.t).toLocaleDateString("fr-FR")}${qtxt(f)?` · ${qtxt(f)}`:""}${f.ph!=null&&f.ph!==""?` · <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}${f.arbre?` · ${esc(f.arbre)}`:""}</p><p>${esc(f.note)}</p><div class="ph" data-ph="${(f.photos||[]).join(",")}"></div><div class="links"><a href="${gmaps(f.lat,f.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(f.lat,f.lon,"Mon coin")}</div><button class="pedit" data-edit="${i}">✏️ Modifier</button></div>`}
+function drawMine(){mine.clearLayers();LS.get("cu-finds",[]).forEach((f,i)=>{const hasPh=f.ph!=null&&f.ph!=="";
+  L.marker([f.lat,f.lon],{icon:pin(f.sp==="mesure"?phCol(f.ph):COL[f.sp]||"#777",hasPh?24:18,hasPh?String(f.ph).replace(".",","):"★","50%")}).addTo(mine).bindPopup(popMine(f,i))})}
 async function fillPhotos(root){for(const d of root.querySelectorAll("[data-ph]")){const ids=d.dataset.ph?d.dataset.ph.split(","):[];d.innerHTML="";for(const id of ids){const u=await photoURL(id);if(!u)continue;const im=document.createElement("img");im.src=u;im.onclick=()=>{$("viewer-img").src=u;$("viewer").hidden=false};d.appendChild(im)}}}
-map.on("popupopen",e=>fillPhotos(e.popup.getElement()));
+map.on("popupopen",e=>{const el=e.popup.getElement();fillPhotos(el);el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{map.closePopup();openEdit(+b.dataset.edit)})});
 $("viewer").onclick=()=>$("viewer").hidden=true;
 let pending=null,draft=[];
 function drawDraft(){$("add-photos").innerHTML="";draft.forEach((p,i)=>{const d=document.createElement("div");d.innerHTML=`<img src="${p.url}" alt=""><button aria-label="Retirer">✕</button>`;d.querySelector("button").onclick=()=>{draft.splice(i,1);drawDraft()};$("add-photos").appendChild(d)})}
 async function addFiles(files){for(const f of files){try{const b=await shrink(f);draft.push({blob:b,url:URL.createObjectURL(b)})}catch(e){status("Photo illisible.")}}drawDraft()}
 $("add-cam").onchange=e=>{addFiles([...e.target.files]);e.target.value=""};$("add-gal").onchange=e=>{addFiles([...e.target.files]);e.target.value=""};
-function openAdd(pos,txt){pending=pos;$("add-pos").textContent=txt;$("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";draft=[];drawDraft();$("s-add").hidden=false}
+let editIdx=null,qSel=null;
+function setQ(q){qSel=q;$("add-qty").querySelectorAll("button").forEach(b=>b.classList.toggle("on",String(q)===b.dataset.q))}
+$("add-qty").querySelectorAll("button").forEach(b=>b.onclick=()=>setQ(String(qSel)===b.dataset.q?null:+b.dataset.q));
+function resetAdd(){editIdx=null;$("add-title").textContent="Noter un coin";$("add-ok").textContent="Enregistrer";$("add-move").hidden=true;$("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";setQ(null);draft=[];drawDraft();$("s-add").hidden=false}
+function openAdd(pos,txt){pending=pos;$("add-pos").textContent=txt;resetAdd()}
 $("b-add").onclick=()=>{if(me){pending={lat:me.lat,lon:me.lon};$("add-pos").textContent=`À votre position GPS (± ${me.acc} m).`}else{const c=map.getCenter();pending={lat:c.lat,lon:c.lng};$("add-pos").textContent="GPS inactif : le coin sera placé au centre de la carte. Astuce : appui long sur la carte pour choisir l'endroit."}
-  $("add-sp").value=SP;$("add-note").value="";$("add-ph").value="";$("add-arbre").value="";draft=[];drawDraft();$("s-add").hidden=false};
-$("add-cancel").onclick=()=>{draft=[];$("s-add").hidden=true};
-$("add-ok").onclick=async()=>{const ids=[];try{for(const p of draft){const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await putPhoto(id,p.blob);ids.push(id)}}catch(e){status("Photos non enregistrées (stockage indisponible).")}
+  resetAdd()};
+async function openEdit(i){const f=LS.get("cu-finds",[])[i];if(!f)return;$("s-list").hidden=true;
+  editIdx=i;pending={lat:f.lat,lon:f.lon};$("add-title").textContent="Modifier le coin";$("add-ok").textContent="Enregistrer les modifications";
+  $("add-pos").textContent=`Noté le ${new Date(f.t).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} à ${new Date(f.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}.`;
+  $("add-move").hidden=!me;$("add-sp").value=f.sp;$("add-note").value=f.note||"";$("add-ph").value=f.ph!=null&&f.ph!==""?String(f.ph).replace(".",","):"";$("add-arbre").value=f.arbre||"";setQ(f.q!=null&&f.q!==""?f.q:null);
+  draft=[];for(const id of (f.photos||[])){const u=await photoURL(id);if(u)draft.push({id,url:u})}drawDraft();$("s-add").hidden=false}
+$("add-move").onclick=()=>{if(!me)return;pending={lat:me.lat,lon:me.lon};$("add-pos").textContent=`Sera replacé à votre position GPS actuelle (± ${me.acc} m).`;$("add-move").hidden=true};
+$("add-cancel").onclick=()=>{draft=[];editIdx=null;$("s-add").hidden=true};
+$("add-ok").onclick=async()=>{const ids=[];try{for(const p of draft){if(p.id){ids.push(p.id);continue}const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await putPhoto(id,p.blob);ids.push(id)}}catch(e){status("Photos non enregistrées (stockage indisponible).")}
   let ph=$("add-ph").value.replace(",",".");ph=ph===""?null:Math.round(parseFloat(ph)*10)/10;if(ph!=null&&(isNaN(ph)||ph<2||ph>10))ph=null;
-  const l=LS.get("cu-finds",[]);l.push({...pending,sp:$("add-sp").value,note:$("add-note").value.trim(),ph,arbre:$("add-arbre").value,photos:ids,t:Date.now()});LS.set("cu-finds",l);
-  draft=[];drawMine();$("s-add").hidden=true;status(`Coin enregistré${ids.length?` avec ${ids.length} photo${ids.length>1?"s":""}`:""}.`)};
-function renderList(){const l=LS.get("cu-finds",[]);$("list").innerHTML=l.length?l.map((f,i)=>`<div class="find"><div class="fi"><div data-ph="${(f.photos||[]).slice(0,1).join(",")}"></div><div><b>${f.sp==="mesure"?"Mesure":SPN[f.sp]}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}<small>${esc([f.arbre,f.note].filter(Boolean).join(" · "))}</small><small>${(f.photos||[]).length} photo(s) · ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)}</small></div></div><div class="row" style="flex:0 0 auto;flex-direction:column"><button data-go="${i}">Voir</button><button data-del="${i}">Suppr.</button></div></div>`).reverse().join(""):`<p class="note">Aucun coin pour l'instant. Touchez « Noter ici » sur place.</p>`;
+  const l=LS.get("cu-finds",[]);const vals={sp:$("add-sp").value,note:$("add-note").value.trim(),ph,arbre:$("add-arbre").value,q:qSel,photos:ids};let msg;
+  if(editIdx!=null&&l[editIdx]){const old=l[editIdx];for(const id of (old.photos||[]))if(!ids.includes(id))try{await delPhoto(id)}catch(e){}
+    const moved=old.lat!==pending.lat||old.lon!==pending.lon;l[editIdx]={...old,...pending,...vals};if(moved)delete l[editIdx].wx;msg="Coin modifié."}
+  else{l.push({...pending,...vals,t:Date.now()});msg=`Coin enregistré${ids.length?` avec ${ids.length} photo${ids.length>1?"s":""}`:""}.`}
+  LS.set("cu-finds",l);const wasEdit=editIdx!=null;editIdx=null;draft=[];drawMine();$("s-add").hidden=true;
+  const un=unsaved();status(msg+(un>=10?` <b>${un} coins pas encore sauvegardés</b> : pensez à faire une sauvegarde (★ Mes coins).`:""));
+  if(wasEdit&&!$("home").hidden)renderHome();fillCoinWx()};
+function renderList(){const l=LS.get("cu-finds",[]);$("list").innerHTML=l.length?l.map((f,i)=>`<div class="find"><div class="fi"><div data-ph="${(f.photos||[]).slice(0,1).join(",")}"></div><div><b>${f.sp==="mesure"?"Mesure":SPN[f.sp]}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` <span class="phb" style="background:${phCol(f.ph)}">pH ${f.ph}</span>`:""}<small>${esc([qtxt(f),f.arbre,f.note].filter(Boolean).join(" · "))}</small><small>${(f.photos||[]).length} photo(s) · ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)}</small></div></div><div class="row" style="flex:0 0 auto;flex-direction:column"><button data-go="${i}">Voir</button><button data-edit="${i}">Modifier</button><button data-del="${i}">Suppr.</button></div></div>`).reverse().join(""):`<p class="note">Aucun coin pour l'instant. Touchez « Noter ici » sur place.</p>`;
   fillPhotos($("list"));
   $("list").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const f=LS.get("cu-finds",[])[+b.dataset.go];follow=false;map.setView([f.lat,f.lon],17);$("s-list").hidden=true});
+  $("list").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEdit(+b.dataset.edit));
   $("list").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(b.dataset.armed){const l=LS.get("cu-finds",[]);const [f]=l.splice(+b.dataset.del,1);LS.set("cu-finds",l);for(const id of (f.photos||[]))try{await delPhoto(id)}catch(e){}drawMine();renderList()}else{b.dataset.armed=1;b.textContent="Confirmer"}})}
 $("b-list").onclick=()=>{renderList();$("s-list").hidden=false};$("list-close").onclick=()=>$("s-list").hidden=true;
 const b2d=b=>new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(b)});
-async function shareFile(file){try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:file.name});return}}catch(e){if(e.name==="AbortError")return}
-  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();a.remove()}
+async function shareFile(file){try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:file.name});return true}}catch(e){if(e.name==="AbortError")return false}
+  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();a.remove();return true}
+const coinKey=f=>f.t+"|"+f.lat;
+function unsaved(){const s=new Set(LS.get("cu-saved",[]));return LS.get("cu-finds",[]).filter(f=>!s.has(coinKey(f))).length}
 $("list-save").onclick=async()=>{const l=LS.get("cu-finds",[]);const photos={};status("Préparation de la sauvegarde…");
   for(const f of l)for(const id of (f.photos||[])){try{const b=await getPhoto(id);if(b)photos[id]=await b2d(b)}catch(e){}}
   const name=`mes-coins-${new Date().toISOString().slice(0,10)}.json`;
-  await shareFile(new File([JSON.stringify({app:"cueillette",v:1,finds:l,photos})],name,{type:"application/json"}));status("Sauvegarde prête.")};
+  const ok=await shareFile(new File([JSON.stringify({app:"cueillette",v:1,finds:l,photos})],name,{type:"application/json"}));
+  if(ok){LS.set("cu-saved",l.map(coinKey));LS.set("cu-savedt",Date.now());status("Sauvegarde prête. Gardez le fichier en lieu sûr (Fichiers, mail…).")}else status("Sauvegarde annulée.");if(!$("home").hidden)renderHome()};
 $("list-restore").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
   try{const j=JSON.parse(await f.text());const cur=LS.get("cu-finds",[]);const key=x=>x.t+"|"+x.lat;const have=new Set(cur.map(key));let n=0;
     for(const [id,d] of Object.entries(j.photos||{})){const b=await (await fetch(d)).blob();await putPhoto(id,b)}
     for(const x of (j.finds||[]))if(!have.has(key(x))){cur.push(x);n++}
-    LS.set("cu-finds",cur);drawMine();renderList();status(`${n} coin(s) restauré(s).`)}catch(err){status("Fichier de sauvegarde illisible.")}};
+    LS.set("cu-finds",cur);LS.set("cu-saved",[...new Set([...LS.get("cu-saved",[]),...(j.finds||[]).map(coinKey)])]);drawMine();renderList();fillCoinWx();status(`${n} coin(s) restauré(s).`)}catch(err){status("Fichier de sauvegarde illisible.")}};
 $("list-gpx").onclick=()=>{const l=LS.get("cu-finds",[]);const x=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
   const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Cueillette Cote d'Opale" xmlns="http://www.topografix.com/GPX/1/1">\n`+l.map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><time>${new Date(f.t).toISOString()}</time><name>${x(f.sp==="mesure"?"pH "+f.ph:SPN[f.sp])}</name><desc>${x([f.ph!=null&&f.ph!==""?"pH "+f.ph:"",f.arbre,f.note].filter(Boolean).join(" · "))}</desc></wpt>`).join("\n")+`\n</gpx>`;
   shareFile(new File([gpx],"mes-coins.gpx",{type:"application/gpx+xml"}))};
@@ -1538,7 +1574,7 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const tempF=(t,[z0,o1,o2,z1])=>t<=z0||t>=z1?0:t<o1?(t-z0)/(o1-z0):t<=o2?1:(z1-t)/(z1-o2);
 const winF=(d,[a,b])=>d<2?.35:d<a?.35+.65*(d-2)/Math.max(1,a-2):d<=b?1:clamp(1-(d-b)/(b*1.2),.1,1);
 let WX=LS.get("cu-wx",null), wxBusy=false;
-function factsAt(d){const p=WX.daily.precipitation_sum,tx=WX.daily.temperature_2m_max,tn=WX.daily.temperature_2m_min;
+function factsAt(d,W){W=W||WX;const p=W.daily.precipitation_sum,tx=W.daily.temperature_2m_max,tn=W.daily.temperature_2m_min;
   let rain15=0;for(let k=Math.max(0,d-15);k<d;k++)rain15+=p[k]||0;
   let since=30,last=null;for(let k=d-1;k>=0;k--){if((p[k]||0)>=10||((p[k]||0)+(p[k-1]||0))>=14){since=d-k;last=k;break}}
   let t=0,n=0;for(let k=Math.max(0,d-7);k<d;k++){t+=(tx[k]+tn[k])/2;n++}
@@ -1709,6 +1745,53 @@ if(!LS.get("cu-tips8",0))$("s-tips").hidden=false;
 $("s-tips").style.zIndex=1700;
 $("tips-ok").onclick=()=>{LS.set("cu-tips8",1);$("s-tips").hidden=true};
 
+
+// ---- Ce que mes sorties m'apprennent : météo des jours avant chaque coin
+const ymd=d=>d.toISOString().slice(0,10);
+let cwBusy=false;
+async function coinWx(f){const d=new Date(f.t),a=new Date(f.t-30*864e5);const la=(Math.round(f.lat*20)/20).toFixed(2),lo=(Math.round(f.lon*20)/20).toFixed(2);
+  const q=`latitude=${la}&longitude=${lo}&start_date=${ymd(a)}&end_date=${ymd(d)}&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=Europe%2FParis`;
+  for(const base of ["https://historical-forecast-api.open-meteo.com/v1/forecast","https://archive-api.open-meteo.com/v1/archive"]){
+    try{const r=await fetch(`${base}?${q}`);if(!r.ok)continue;const W=await r.json();const T=W.daily.time;let i=T.indexOf(ymd(d));if(i<0)i=T.length-1;
+      const p=W.daily.precipitation_sum;if(p.slice(Math.max(0,i-15),i).some(v=>v==null))continue;const x=factsAt(i,W);return {r15:Math.round(x.rain15),since:x.last!=null?x.since:null,t7:Math.round(x.t7*10)/10,frost:x.frost}}catch(e){}}
+  return null}
+async function fillCoinWx(){if(cwBusy||!navigator.onLine)return;cwBusy=true;let ch=false;
+  try{const l=LS.get("cu-finds",[]);for(const f of l){if(f.wx||f.sp==="mesure"||Date.now()-f.t<864e5*0.5&&false)continue;const w=await coinWx(f);if(w){f.wx=w;ch=true}}
+    if(ch){const cur=LS.get("cu-finds",[]);const m=new Map(l.map(f=>[coinKey(f),f.wx]));cur.forEach(f=>{if(!f.wx&&m.get(coinKey(f)))f.wx=m.get(coinKey(f))});LS.set("cu-finds",cur);if(!$("home").hidden)renderHome()}}
+  finally{cwBusy=false}}
+const med=a=>{const b=[...a].sort((x,y)=>x-y),n=b.length;return n?(n%2?b[(n-1)/2]:(b[n/2-1]+b[n/2])/2):null};
+const rng=a=>{const lo=Math.min(...a),hi=Math.max(...a);return lo===hi?String(lo).replace(".",","):`${String(lo).replace(".",",")} à ${String(hi).replace(".",",")}`};
+const MO=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function learnStats(){const l=LS.get("cu-finds",[]).filter(f=>f.sp!=="mesure"&&f.sp!=="autre");const by={};
+  l.forEach(f=>{(by[f.sp]=by[f.sp]||[]).push(f)});
+  return Object.entries(by).map(([sp,a])=>{const ok=a.filter(f=>f.q!==0),nul=a.filter(f=>f.q===0),w=ok.filter(f=>f.wx);
+    const since=w.map(f=>f.wx.since).filter(v=>v!=null),r15=w.map(f=>f.wx.r15),t7=w.map(f=>f.wx.t7),ph=ok.map(f=>f.ph).filter(v=>v!=null&&v!=="");
+    const months={};ok.forEach(f=>{const m=new Date(f.t).getMonth();months[m]=(months[m]||0)+1});
+    const trees={};ok.forEach(f=>{if(f.arbre)trees[f.arbre]=(trees[f.arbre]||0)+1});
+    const nr15=nul.filter(f=>f.wx).map(f=>f.wx.r15);
+    const big=ok.filter(f=>f.q===3).length;
+    return {sp,n:ok.length,nul:nul.length,big,since,r15,t7,ph,months,trees,nr15,sinceMin:since.length?Math.min(...since):null,sinceMax:since.length?Math.max(...since):null}}).filter(s=>s.n||s.nul).sort((a,b)=>b.n-a.n)}
+function learnHTML(s,short){const c=COL[s.sp]||"#777",out=[];
+  out.push(`<b>${esc(SPN[s.sp]||s.sp)}</b> · trouvé ${s.n} fois${s.big?` (dont ${s.big} panier${s.big>1?"s":""})`:""}${s.nul?` · ${s.nul} sortie${s.nul>1?"s":""} sans rien`:""}`);
+  if(s.since.length)out.push(`Trouvé <b>${s.sinceMin===s.sinceMax?s.sinceMin:s.sinceMin+" à "+s.sinceMax} jours</b> après une bonne pluie${s.sinceMin!==s.sinceMax?` (en général ${Math.round(med(s.since))} j)`:""}.`);
+  if(s.r15.length)out.push(`Pluie des 15 jours avant : ${rng(s.r15)} mm · ${rng(s.t7.map(v=>Math.round(v)))} °C de moyenne.`);
+  if(s.nr15.length&&s.r15.length)out.push(`Quand vous n'avez rien trouvé : ${Math.round(med(s.nr15))} mm sur 15 jours, contre ${Math.round(med(s.r15))} mm quand ça donnait.`);
+  if(!short){const m=Object.keys(s.months).map(Number).sort((a,b)=>a-b);if(m.length)out.push(`Mois : ${m.map(k=>MO[k]+(s.months[k]>1?` (${s.months[k]})`:"")).join(", ")}.`);
+    const t=Object.entries(s.trees).sort((a,b)=>b[1]-a[1]);if(t.length)out.push(`Sous : ${t.map(([k,v])=>k.toLowerCase()+(v>1?` (${v})`:"")).join(", ")}.`);
+    if(s.ph.length)out.push(`pH du sol : ${rng(s.ph)}.`)}
+  if(s.since.length&&WX){const f=factsAt(todayIdx());const now=f.last!=null?f.since:null;const lo=Math.max(1,s.sinceMin-1),hi=s.sinceMax+2;
+    out.push(now==null?`<small>Aujourd'hui : pas de bonne pluie récente, il en faut une d'abord.</small>`:now<lo?`<small>Aujourd'hui : bonne pluie il y a ${now} j → d'après vos sorties, plutôt <b>dans ${lo-now} à ${hi-now} jours</b>.</small>`:now<=hi?`<small>Aujourd'hui : bonne pluie il y a ${now} j → <b>c'est le moment</b> d'après vos sorties.</small>`:`<small>Aujourd'hui : dernière bonne pluie il y a ${now} j, plus tard que d'habitude pour vous.</small>`)}
+  return `<div class="lsp" style="border-color:${c}">${out.map(x=>`<p>${x}</p>`).join("")}</div>`}
+function renderLearn(){const st=learnStats();const pend=LS.get("cu-finds",[]).filter(f=>f.sp!=="mesure"&&!f.wx).length;
+  $("learn").innerHTML=(st.length?st.map(s=>learnHTML(s,false)).join(""):`<p class="note">Notez vos premiers coins (avec la quantité) : les tendances apparaîtront ici.</p>`)+(pend?`<p class="note">${pend} coin(s) en attente de la météo (il faut du réseau).</p>`:"")}
+$("list-learn").onclick=()=>{$("s-list").hidden=true;renderLearn();$("s-learn").hidden=false;fillCoinWx().then(()=>{if(!$("s-learn").hidden)renderLearn()})};
+$("learn-close").onclick=()=>$("s-learn").hidden=true;
+function revisit(){const l=LS.get("cu-finds",[]),now=new Date(),y=now.getFullYear(),out=[];
+  const doy=d=>Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),td=doy(now);
+  l.forEach((f,i)=>{if(f.sp==="mesure"||f.q===0)return;const d=new Date(f.t);
+    if(d.getFullYear()<y){let dd=doy(d)-td;if(dd>=-10&&dd<=30)out.push({f,i,w:dd<=0?`trouvé à cette période en ${d.getFullYear()}`:`trouvé vers le ${d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})} ${d.getFullYear()}`,s:10-Math.abs(dd)/5+(f.q||1)})}
+    else if(WX&&now-d>5*864e5&&MET[f.sp]){const v=indexAt(f.sp,todayIdx()).v;if(v>=45)out.push({f,i,w:`conditions bonnes aujourd'hui (${v}), trouvé le ${d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}`,s:v/20+(f.q||1)})}});
+  const seen=new Set();return out.sort((a,b)=>b.s-a.s).filter(o=>{const k=o.f.sp+Math.round(o.f.lat*500)+"|"+Math.round(o.f.lon*500);if(seen.has(k))return false;seen.add(k);return true}).slice(0,4)}
 // ---- Écran d'accueil
 function homeHello(){const h=new Date().getHours(),n=LS.get("cu-name","");$("hm-hello").textContent=(h<5||h>=18?"Bonsoir":"Bonjour")+(n?" "+n:"")+" 🍄";$("hm-name").hidden=!!n||LS.get("cu-name-skip",0)===1;
   $("hm-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}
@@ -1722,8 +1805,15 @@ function renderHome(){homeHello();
   else{$("hm-wx").innerHTML=`<h2>Conditions de pousse</h2><div class="wx-txt">Météo indisponible pour l'instant (pas de réseau ?). Elle s'affichera dès la connexion.</div>`;$("hm-top").innerHTML=`<p class="note">Le classement apparaîtra avec la météo.</p>`}
   const coins=LS.get("cu-finds",[]);$("t-coins-n").textContent=coins.length?coins.length+" enregistré"+(coins.length>1?"s":""):"";
   $("t-car-n").textContent=CAR?"garée "+new Date(CAR.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+  const un=unsaved(),st=LS.get("cu-savedt",0),old=coins.length&&un>0&&(un>=5||(st&&Date.now()-st>30*864e5)||(!st&&coins.length>=3));
+  $("hm-save").hidden=!old;if(old)$("hm-save").innerHTML=`<h2>💾 Pensez à sauvegarder</h2><p class="note" style="margin:0 0 8px">${un} coin${un>1?"s":""} pas encore sauvegardé${un>1?"s":""}${st?` (dernière sauvegarde le ${new Date(st).toLocaleDateString("fr-FR")})`:""}. Si l'appli est supprimée du téléphone, tout est perdu.</p><div class="row"><button class="ok" id="hm-save-go">Sauvegarder maintenant</button></div>`;
+  if(old)$("hm-save-go").onclick=()=>$("list-save").click();
+  const rv=revisit();$("hm-revc").hidden=!rv.length;
+  $("hm-rev").innerHTML=rv.map(o=>`<button data-k="${o.i}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[o.f.sp]||"#777"}"></span><span><b>${esc(SPN[o.f.sp]||"Coin")}</b>${qtxt(o.f)?` · ${qtxt(o.f)}`:""}<br><small class="note">${esc(o.w)}</small></span></button>`).join("");
+  $("hm-rev").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const f=coins[+b.dataset.k];closeHome();follow=false;map.setView([f.lat,f.lon],17)});
+  const ls=learnStats().filter(s=>s.since.length);$("hm-learnc").hidden=!ls.length;$("hm-learn").innerHTML=ls.slice(0,2).map(s=>learnHTML(s,true)).join("");
   const last=coins.slice(-3).reverse();$("hm-lastc").hidden=!last.length;
-  $("hm-last").innerHTML=last.map((f,k)=>`<button data-k="${coins.length-1-k}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[f.sp]||"#777"}"></span><span><b>${esc(SPN[f.sp]||"Coin")}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` · pH ${f.ph}`:""}<br><small class="note">${esc(f.note||f.arbre||"")}</small></span></button>`).join("");
+  $("hm-last").innerHTML=last.map((f,k)=>`<button data-k="${coins.length-1-k}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[f.sp]||"#777"}"></span><span><b>${esc(SPN[f.sp]||"Coin")}</b> · ${new Date(f.t).toLocaleDateString("fr-FR")}${f.ph!=null&&f.ph!==""?` · pH ${f.ph}`:""}<br><small class="note">${esc([qtxt(f),f.arbre,f.note].filter(Boolean).join(" · "))}</small></span></button>`).join("");
   $("hm-last").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const f=coins[+b.dataset.k];closeHome();follow=false;map.setView([f.lat,f.lon],17)});
   $("hm-start").checked=LS.get("cu-home",1)!==0}
 function openHome(){renderHome();$("home").hidden=false}
@@ -1741,6 +1831,7 @@ $("t-car").onclick=()=>{closeHome();$("b-car").click()};
 $("t-chasse").onclick=$("t-forets").onclick=()=>{closeHome();$("s-cou").hidden=false;setTimeout(()=>$("forets").scrollIntoView({block:"start"}),50)};
 $("t-thermo").onclick=()=>{closeHome();openMeteo()};
 $("t-help").onclick=()=>{$("s-tips").hidden=false};
+$("hm-learn-more").onclick=()=>{closeHome();renderLearn();$("s-learn").hidden=false};
 $("hm-more").onclick=()=>{closeHome();renderToday();$("s-today").hidden=false};
 $("hm-start").onchange=e=>LS.set("cu-home",e.target.checked?1:0);
 if(LS.get("cu-home",1)!==0)openHome();
@@ -1761,7 +1852,7 @@ async function offline(id){
 }
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
-setSp(SP);drawMine();loadZones(false);loadWx(false);
+setSp(SP);drawMine();loadZones(false);loadWx(false);setTimeout(fillCoinWx,2500);window.addEventListener("online",fillCoinWx);
 </script>
 </body>
 </html>
