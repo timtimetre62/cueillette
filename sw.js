@@ -1,7 +1,7 @@
-const SHELL="cueillette-app-v19", TILES="cueillette-tuiles";
+const SHELL="cueillette-app-v21", TILES="cueillette-tuiles";
 const FILES=["./","index.html","manifest.webmanifest","icone2-180.png","icone2-192.png","icone2-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(SHELL).then(c=>c.addAll(FILES)));self.skipWaiting()});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==SHELL&&n!==TILES&&n!=="cueillette-photos").map(n=>caches.delete(n)))).then(()=>self.clients.claim()))});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==SHELL&&n.startsWith("cueillette-app-")).map(n=>caches.delete(n)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",e=>{
   const u=new URL(e.request.url);
   if(e.request.method!=="GET")return;

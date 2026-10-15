@@ -934,11 +934,16 @@ body.gants .lp-bot .row button{min-height:66px}
   <label class="ck"><input type="checkbox" id="c-essimg"> Carte IGN des essences, tous bois (image)</label>
   <img class="legend" id="ess-leg" alt="Légende des essences IGN" hidden>
   <label class="ck"><input type="checkbox" id="c-anc"> Forêts anciennes</label>
-  <label class="ck"><input type="checkbox" id="c-recent" checked> 🆕 Pousses récentes (iNaturalist, 30 derniers jours)</label>
+  <label class="ck" id="l-smnfr"><input type="checkbox" id="c-smnfr" checked> 🟣 Sorties SMNF récentes (2024-2026, par parcelle)</label>
+  <label class="ck"><input type="checkbox" id="c-geol"> 🪨 Carte géologique (BRGM) : craie, argile, sable…</label>
+  <p class="note" id="leg-geol" hidden style="margin:0 0 4px 26px">En gros : <b style="color:#2a8fd0">bleus</b> = Jurassique (argiles, marnes, calcaires du Boulonnais) · <b style="color:#2e9e3e">verts</b> = Crétacé (sables et argiles du Wealdien, argile du Gault, craie en vert pâle / jaune-vert) · <b style="color:#c9a227">jaunes</b> = sables tertiaires et dunes · teintes très pâles = limons et alluvions. Trompettes et pieds de mouton : plutôt argiles et craie ; girolles et ch. en tube : plutôt sables et sols acides.</p>
+  <label class="ck" id="l-recent"><input type="checkbox" id="c-recent" checked> 🆕 Pousses récentes (iNaturalist, 30 derniers jours)</label>
   <label class="ck"><input type="checkbox" id="c-prsf"> Points de rencontre des secours en forêt</label>
   <div class="row"><button id="trail-clear">Terminer ce trajet (il reste dans Mes balades)</button></div>
   <div class="row"><button id="b-view">Charger les peuplements de la zone affichée (bois privés compris)</button></div>
   <p class="note">Se fait aussi tout seul quand vous zoomez sur un bois avec du réseau.</p>
+  <div id="pa-box"><h3>Aller à une parcelle ONF</h3>
+  <div class="row"><select id="pa-f" style="flex:2;font:inherit;padding:9px;border-radius:10px;border:1px solid var(--line)"><option value="desvres">Desvres</option><option value="boulogne">Boulogne</option><option value="hardelot">Hardelot</option><option value="guines">Guînes</option><option value="ecault">Écault</option><option value="tournehem">Tournehem</option><option value="hesdin">Hesdin</option><option value="eperlecques">Éperlecques</option><option value="coteopale">Côte d'Opale (Merlimont)</option></select><input id="pa-n" inputmode="numeric" placeholder="n°" style="flex:1;min-width:0;font:inherit;padding:9px;border-radius:10px;border:1px solid var(--line)"><button id="pa-go" class="ok" style="flex:1">Aller</button></div></div>
   <h3>Aller à une forêt</h3>
   <div class="list-forets" id="forets"></div>
   <div class="row"><button id="cou-close" class="ok">Fermer</button></div>
@@ -1372,6 +1377,7 @@ const D={"finds": [{"sp": "girolle", "lat": 50.6349, "lon": 1.61667, "n": 1, "ye
 const SPN={mesure:"Mesure de pH",cepe:"Cèpes",girolle:"Girolles",trompette:"Trompettes",tube:"Chanterelles en tube",pied:"Pieds de mouton",morille:"Morilles",autre:"Autre"};
 const COL={cepe:"#8a5a2b",girolle:"#e08a1e",trompette:"#2c2632",tube:"#5f7a1e",pied:"#b38552",morille:"#8a3e62",autre:"#777",acces:"#3a6b3f",smnf:"#6b3fa0"};
 const $=id=>document.getElementById(id);
+const FULL=false;
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 // ---- Espèces ajoutées : observations GBIF téléchargées à la demande
@@ -1433,6 +1439,7 @@ const OV={
   parc:L.tileLayer(W("FORETS.PUBLIQUES","image/png","FORETS PUBLIQUES ONF"),{pane:"parcelles",crossOrigin:"anonymous",maxNativeZoom:16,maxZoom:19,opacity:.85,attribution:"Forêts publiques © ONF"}),
   ess:L.tileLayer(W("LANDCOVER.FORESTINVENTORY.V2","image/png"),{maxNativeZoom:16,maxZoom:19,minZoom:6,opacity:.55,attribution:"BD Forêt © IGN"}),
   anc:L.tileLayer(W("IGNF_FORETS-ANCIENNES","image/png"),{maxNativeZoom:16,maxZoom:19,minZoom:6,opacity:.6,attribution:"Forêts anciennes © IGN"}),
+  geol:L.tileLayer.wms("https://geoservices.brgm.fr/geologie",{layers:"SCAN_H_GEOL50",format:"image/png",transparent:true,opacity:.55,maxZoom:19,attribution:"Carte géologique © BRGM"}),
   prsf:L.tileLayer(W("PROTECTEDAREAS.PRSF","image/png","POINT RENCONTRE SECOURS FORET"),{maxNativeZoom:17,maxZoom:19,minZoom:6,attribution:"PRSF © IGN"})
 };
 let base=LS.get("cu-base","plan");if(!BASES[base])base="plan";
@@ -1539,7 +1546,7 @@ $("forets").querySelectorAll("[data-off]").forEach(b=>b.onclick=()=>{$("s-cou").
 $("forets").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const [a,o]=b.dataset.go.split(",");follow=false;map.setView([+a,+o],14);$("s-cou").hidden=true});
 
 // ---- espèce
-function setSp(sp){if(!SPN[sp]||sp==="mesure"||sp==="autre")sp="trompette";SP=sp;LS.set("cu-sp",sp);$("sp-name").textContent=SPN[sp];$("sp-dot").style.background=COL[sp];$("sp-n").textContent=getFinds(sp).length?getFinds(sp).length+" lieux":"";if(NEW[sp])loadGbif(sp,false);if(typeof WX!=="undefined"&&WX)drawThermo();document.querySelectorAll("[data-sp]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sp===sp));legendZones();drawZones();drawObs();if(typeof me!=="undefined"&&me)updateStatus()}
+function setSp(sp){if(!SPN[sp]||sp==="mesure"||sp==="autre")sp="trompette";SP=sp;LS.set("cu-sp",sp);$("sp-name").textContent=SPN[sp];$("sp-dot").style.background=COL[sp];$("sp-n").textContent=getFinds(sp).length?getFinds(sp).length+" lieux":"";if(NEW[sp])loadGbif(sp,false);if(typeof WX!=="undefined"&&WX)drawThermo();document.querySelectorAll("[data-sp]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sp===sp));legendZones();drawZones();drawObs();if(window.__smnfReady)drawSmnf();if(typeof me!=="undefined"&&me)updateStatus()}
 function renderPicker(){const mo=new Date().getMonth();
   $("sp-groups").innerHTML=GROUPS.map(([g,ids])=>`<h3>${g}</h3><div class="spg">${ids.map(id=>{const se=(MET[id]||{s:[]}).s[mo]||0;return `<button data-sp="${id}" aria-pressed="${id===SP}"><b><i style="background:${COL[id]}"></i>${esc(SPN[id])}</b><small class="${se>=.5?"on":""}">${se>=.5?"en saison":se>0?"début / fin de saison":"hors saison"}</small></button>`}).join("")}</div>`).join("");
   $("sp-groups").querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{setSp(b.dataset.sp);$("s-sp").hidden=true})}
@@ -1553,7 +1560,7 @@ $("c-zones").onchange=drawZones;
 $("b-view").onclick=()=>{$("s-cou").hidden=true;loadView(true)};
 $("c-ess").onchange=e=>{$("leg-ess").hidden=!e.target.checked;if(e.target.checked){drawEss();essLayer.addTo(map);if($("c-zones").checked){$("c-zones").checked=false;drawZones()}if(map.getZoom()<13)map.setZoom(13)}else map.removeLayer(essLayer)};$("c-obs").onchange=drawObs;
 $("c-smnf").onchange=e=>e.target.checked?smnfLayer.addTo(map):map.removeLayer(smnfLayer);
-[["c-parc","parc"],["c-essimg","ess"],["c-anc","anc"],["c-prsf","prsf"]].forEach(([id,k])=>$(id).onchange=e=>{if(e.target.checked){OV[k].addTo(map);if(k==="parc"&&map.getZoom()<15)map.setZoom(15)}else map.removeLayer(OV[k]);if(k==="ess"){OV.ess.setOpacity(.8);const i=$("ess-leg");i.hidden=!e.target.checked;if(e.target.checked&&!i.src)i.src="https://data.geopf.fr/annexes/ressources/legendes/LANDCOVER.FORESTINVENTORY.V2-legend.png"}});
+[["c-parc","parc"],["c-essimg","ess"],["c-anc","anc"],["c-prsf","prsf"],["c-geol","geol"]].forEach(([id,k])=>$(id).onchange=e=>{if(e.target.checked){OV[k].addTo(map);if(k==="parc"&&map.getZoom()<15)map.setZoom(15)}else map.removeLayer(OV[k]);if(k==="ess"){OV.ess.setOpacity(.8);const i=$("ess-leg");i.hidden=!e.target.checked;if(e.target.checked&&!i.src)i.src="https://data.geopf.fr/annexes/ressources/legendes/LANDCOVER.FORESTINVENTORY.V2-legend.png"}});
 
 // ---- GPS
 let watch=null,meMarker=null,meCircle=null,follow=true,me=null,target=null;
@@ -1829,7 +1836,7 @@ function archiveTrail(){if(TRAIL.p&&TRAIL.p.length>=5){const w=LS.get("cu-walks"
 if(Date.now()-TRAIL.t>3*36e5){archiveTrail();TRAIL={t:Date.now(),t0:Date.now(),p:[]};LS.set("cu-trail",TRAIL)}
 const trailLine=L.polyline(TRAIL.p,{color:"#1a73e8",weight:3,opacity:.6,dashArray:"2 6",interactive:false}).addTo(map);
 function addTrail(){if(!me||me.acc>40)return;if(TRAIL.p.length&&Date.now()-TRAIL.t>3*36e5){archiveTrail();TRAIL={t:Date.now(),t0:Date.now(),p:[]};trailLine.setLatLngs([])}if(!TRAIL.p.length)TRAIL.t0=Date.now();const l=TRAIL.p[TRAIL.p.length-1];if(l&&dist({lat:l[0],lon:l[1]},me)<15)return;TRAIL.p.push([+me.lat.toFixed(6),+me.lon.toFixed(6)]);TRAIL.t=Date.now();trailLine.setLatLngs(TRAIL.p);if(TRAIL.p.length%5===0)LS.set("cu-trail",TRAIL)}
-$("trail-clear").onclick=()=>{archiveTrail();TRAIL={t:Date.now(),t0:Date.now(),p:[]};trailLine.setLatLngs([]);LS.set("cu-trail",TRAIL);drawZones();status("Trajet terminé : il est rangé dans 🥾 Mes balades.")};
+$("trail-clear").onclick=()=>{archiveTrail();TRAIL={t:Date.now(),t0:Date.now(),p:[]};trailLine.setLatLngs([]);LS.set("cu-trail",TRAIL);drawWalkZones();status("Trajet terminé : il est rangé dans 🥾 Mes balades.")};
 // ---- Aujourd'hui
 function renderToday(){if(!WX){$("td-wx").textContent="Météo pas encore chargée : ouvrez l'appli avec du réseau.";$("td-list").innerHTML="";loadWx(true);return}
   const i=todayIdx(),f=factsAt(i),T=WX.daily.time;
@@ -2039,9 +2046,9 @@ $("qk-cancel").onclick=()=>$("s-quick").hidden=true;
 
 // ---- Mes balades
 const zonesLayer=L.layerGroup(),walkLine=L.polyline([],{color:"#7b3fa0",weight:4,opacity:.9});
-function drawZones(){zonesLayer.clearLayers();if(!LS.get("cu-zonesf",0)){map.removeLayer(zonesLayer);return}
+function drawWalkZones(){zonesLayer.clearLayers();if(!LS.get("cu-zonesf",0)){map.removeLayer(zonesLayer);return}
   [...LS.get("cu-walks",[]),...(TRAIL.p.length>1?[{p:TRAIL.p}]:[])].forEach(w=>L.polyline(w.p,{color:"#7b3fa0",weight:22,opacity:.18,lineCap:"round",lineJoin:"round",interactive:false}).addTo(zonesLayer));zonesLayer.addTo(map)}
-$("w-zones").onchange=e=>{LS.set("cu-zonesf",e.target.checked?1:0);drawZones();if(e.target.checked)status("Zones fouillées en violet clair : vos trajets des balades enregistrées.")};
+$("w-zones").onchange=e=>{LS.set("cu-zonesf",e.target.checked?1:0);drawWalkZones();if(e.target.checked)status("Zones fouillées en violet clair : vos trajets des balades enregistrées.")};
 const dur=ms=>{const m=Math.round(ms/6e4);return m<60?m+" min":Math.floor(m/60)+" h "+String(m%60).padStart(2,"0")};
 function walkCoins(t0,t1){return LS.get("cu-finds",[]).map((f,i)=>({f,i})).filter(o=>o.f.t>=t0-6e5&&o.f.t<=t1+6e5&&o.f.sp!=="mesure")}
 function coinsTxt(cs){if(!cs.length)return"aucun coin noté";const by={};cs.forEach(o=>{const k=o.f.sp;by[k]=(by[k]||0)+(o.f.q===0?0:1)});const nul=cs.filter(o=>o.f.q===0).length;
@@ -2055,7 +2062,7 @@ function renderWalks(){$("w-zones").checked=!!LS.get("cu-zonesf",0);
     status(`Balade du ${new Date(x.t0).toLocaleDateString("fr-FR")} en violet : ${fmt(x.d)}, ${dur(x.t1-x.t0)}.`)})}
 function openWalks(){closeHome();renderWalks();$("s-walks").hidden=false}
 $("w-close").onclick=()=>$("s-walks").hidden=true;
-drawZones();
+drawWalkZones();
 
 // ---- Bilan de saison
 let blYear=new Date().getFullYear();
@@ -2100,7 +2107,7 @@ $("lost-start").onclick=()=>{closeLost();const a=TRAIL.p[0];if(a){setTarget({lat
 $("car-lost").onclick=()=>{$("s-car").hidden=true;openLost()};
 
 // ---- Pousses récentes : observations iNaturalist des 30 derniers jours (mises à jour à chaque ouverture)
-const RECSP=[["trompette",/^Craterellus cornucopioides/],["tube",/tubaeformis/],["girolle",/^Cantharellus (cibarius|pallens|amethysteus|subpruinosus|friesii|ferruginascens)/],
+const RECSP=[["sinueuse",/^(Craterellus|Pseudocraterellus) (undulatus|sinuosus)/],["orange",/^Leccinum albostipitatum/],["trompette",/^Craterellus cornucopioides/],["tube",/tubaeformis/],["girolle",/^Cantharellus (cibarius|pallens|amethysteus|subpruinosus|friesii|ferruginascens)/],
  ["cepe",/^Boletus (edulis|reticulatus|aestivalis|aereus|pinophilus)/],["pied",/^Hydnum/],["morille",/^Morchella/],
  ...Object.entries(NEW).map(([k,v])=>[k,new RegExp("^("+v.sci.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")")])];
 const recSp=n=>{for(const [k,re] of RECSP)if(re.test(n))return k;return null};
@@ -2110,19 +2117,46 @@ function recIcon(sp,fresh){return L.divIcon({className:"",iconSize:[26,26],iconA
 function recPop(o){return `<div class="pop"><h3>🆕 ${esc(SPN[o.sp]||o.sp)}</h3><p><b>${daysAgo(o.d)}</b> (${new Date(o.d).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})})${o.acc?` · ± ${o.acc} m`:""}</p>${o.ph?`<img class="rec" src="${o.ph}" alt="">`:""}<p><i>${esc(o.n)}</i> · ${o.q==="research"?"identification confirmée":"identification à confirmer"}${o.pl?`<br>${esc(o.pl)}`:""}</p><div class="links"><a href="https://www.inaturalist.org/observations/${o.id}" target="_blank" rel="noopener">Voir sur iNaturalist</a><a href="${gmaps(o.lat,o.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(o.lat,o.lon,"Pousse récente")}</div></div>`}
 function drawRec(){recLayer.clearLayers();if(!REC)return;REC.obs.forEach(o=>L.marker([o.lat,o.lon],{icon:recIcon(o.sp,(Date.now()-new Date(o.d))/864e5<8),zIndexOffset:900}).bindPopup(recPop(o)).addTo(recLayer));
   if($("c-recent").checked)recLayer.addTo(map);else map.removeLayer(recLayer)}
-async function loadRec(force){if(recBusy||!navigator.onLine)return;if(!force&&REC&&Date.now()-REC.t<3*36e5)return;recBusy=true;
+async function loadRec(force){if(!FULL||recBusy||!navigator.onLine)return;if(!force&&REC&&Date.now()-REC.t<3*36e5)return;recBusy=true;
   try{const d1=ymd(new Date(Date.now()-30*864e5));let all=[];
     for(let page=1;page<=4;page++){const r=await fetch(`https://api.inaturalist.org/v1/observations?swlat=50.3&swlng=1.5&nelat=51.0&nelng=2.45&d1=${d1}&iconic_taxa=Fungi&per_page=200&page=${page}&order=desc&order_by=observed_on`);if(!r.ok)break;const j=await r.json();all=all.concat(j.results);if(j.results.length<200)break}
     const obs=all.map(o=>{const sp=o.taxon&&recSp(o.taxon.name);if(!sp||!o.location||o.obscured||(o.positional_accuracy||0)>500)return null;const [la,lo]=o.location.split(",").map(Number);
       return {id:o.id,sp,n:o.taxon.name,d:o.observed_on,lat:la,lon:lo,acc:o.positional_accuracy||null,q:o.quality_grade,pl:o.place_guess||"",ph:o.photos&&o.photos[0]?o.photos[0].url.replace("square","small"):""}}).filter(Boolean);
     REC={t:Date.now(),obs};LS.set("cu-recent",REC);drawRec();if(!$("home").hidden)renderHome()}catch(e){}finally{recBusy=false}}
 $("c-recent").onchange=e=>{LS.set("cu-recon",e.target.checked?1:0);drawRec();if(e.target.checked)loadRec(false)};
-$("c-recent").checked=LS.get("cu-recon",1)!==0;drawRec();setTimeout(()=>loadRec(false),1500);window.addEventListener("online",()=>loadRec(false));
-function renderRecHome(){const o=REC?[...REC.obs].sort((a,b)=>b.d.localeCompare(a.d)):[];$("hm-recc").hidden=!o.length;if(!o.length)return;
+$("c-recent").checked=FULL&&LS.get("cu-recon",1)!==0;drawRec();setTimeout(()=>loadRec(false),1500);window.addEventListener("online",()=>loadRec(false));
+function renderRecHome(){const o=REC&&FULL?[...REC.obs].sort((a,b)=>b.d.localeCompare(a.d)):[];$("hm-recc").hidden=!o.length;if(!o.length)return;
   $("hm-rec").innerHTML=o.slice(0,5).map((x,k)=>`<button data-rc="${k}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[x.sp]||"#777"};outline:2px solid #ff3b30"></span><span><b>${esc(SPN[x.sp]||x.sp)}</b> · ${daysAgo(x.d)}${me?` · à ${fmt(dist(me,x))}`:""}<br><small class="note">${esc(x.pl||"")}</small></span></button>`).join("");
   $("hm-rec-n").textContent=`${o.length} observation${o.length>1?"s":""} publiée${o.length>1?"s":""} sur iNaturalist ces 30 derniers jours (cercles rouges « NEW » sur la carte). Mis à jour à ${new Date(REC.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}.`;
   $("hm-rec").querySelectorAll("[data-rc]").forEach(b=>b.onclick=()=>{const x=o[+b.dataset.rc];closeHome();follow=false;if(!$("c-recent").checked){$("c-recent").checked=true;LS.set("cu-recon",1);drawRec()}map.setView([x.lat,x.lon],16);
     recLayer.eachLayer(m=>{const ll=m.getLatLng();if(ll.lat===x.lat&&ll.lng===x.lon)setTimeout(()=>m.openPopup(),300)})})}
+
+// ---- Sorties SMNF récentes (atlas mycologique des Hauts-de-France) + parcelles ONF
+const SMNFR=[];const PARC={};
+const SMFR={"Craterellus melanoxeros":"Chanterelle noircissante","Cantharellus ferruginascens":"Girolle (C. ferruginascens)","Hydnum ovoideisporum":"Pied de mouton (H. ovoideisporum)","Leccinum albostipitatum":"Bolet orangé des trembles","Boletus aestivalis":"Cèpe d'été","Boletus aereus":"Cèpe bronzé","Boletus edulis":"Cèpe de Bordeaux","Hydnum rufescens":"Pied de mouton roux","Hydnum repandum":"Pied de mouton","Cantharellus cibarius":"Girolle","Cantharellus pallens":"Girolle pâle","Cantharellus amethysteus":"Girolle améthyste","Pleurotus cornucopiae":"Pleurote corne d'abondance","Pleurotus pulmonarius":"Pleurote pulmonaire","Craterellus tubaeformis":"Chanterelle en tube","Craterellus cornucopioides":"Trompette des morts","Craterellus cinereus":"Chanterelle cendrée"};
+const smName=n=>SMFR[n]||(recSp(n)?SPN[recSp(n)]:n);
+const smnfRLayer=L.layerGroup();
+const dFr=d=>new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
+function smIcon(o,hit){const y=o.v[0].d.slice(2,4);return L.divIcon({className:"",iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-16],html:`<div style="width:32px;height:32px;border-radius:9px;background:${hit?"#6b3fa0":"#a58cc4"};border:${hit?"3px solid #ffd23f":"2px solid #fff"};box-shadow:0 1px 4px rgba(0,0,0,.45);color:#fff;font:700 9px system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1">SMNF<span style="font-size:11px">'${y}</span></div>`})}
+function smPop(o){return `<div class="pop"><h3>🟣 ${esc(o.lieu)}</h3>${o.pa?`<p><b>Parcelle${/[,;à]/.test(o.pa)?"s":""} ${esc(o.pa)}</b></p>`:""}${o.ap===2?`<p class="note">Lieu précis non publié : quelque part dans cette forêt (cercle).</p>`:o.ap===1?`<p class="note">Position approchée (lieu-dit).</p>`:""}
+  ${o.v.map(v=>`<p><b>${dFr(v.d)}</b> : ${v.sp.map(n=>{const nm=esc(smName(n));return recSp(n)===SP?`<mark>${nm}</mark>`:nm}).join(", ")}</p>`).join("")}
+  <p class="note">Sorties de la Société mycologique du Nord de la France (atlas mycologique des Hauts-de-France). Seules les espèces comestibles ou recherchées sont listées.</p>
+  <div class="links"><a href="${gmaps(o.lat,o.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(o.lat,o.lon,o.lieu)}</div></div>`}
+function drawSmnf(){smnfRLayer.clearLayers();SMNFR.forEach(o=>{const hit=o.v.some(v=>v.sp.some(n=>recSp(n)===SP));
+  if(o.ap===2)L.circle([o.lat,o.lon],{radius:1200,color:"#6b3fa0",weight:1.5,dashArray:"5 6",fillOpacity:.04,interactive:false}).addTo(smnfRLayer);
+  L.marker([o.lat,o.lon],{icon:smIcon(o,hit),zIndexOffset:hit?800:300}).bindPopup(smPop(o)).addTo(smnfRLayer)});
+  if($("c-smnfr").checked)smnfRLayer.addTo(map);else map.removeLayer(smnfRLayer)}
+$("c-smnfr").checked=FULL&&LS.get("cu-smnfr",1)!==0;if(!FULL)["l-smnfr","l-recent","pa-box"].forEach(i=>$(i).hidden=true);$("c-smnfr").onchange=e=>{LS.set("cu-smnfr",e.target.checked?1:0);drawSmnf()};
+window.__smnfReady=true;drawSmnf();
+$("c-geol").addEventListener("change",e=>{$("leg-geol").hidden=!e.target.checked;if(e.target.checked&&map.getZoom()<13)map.setZoom(13)});
+// Aller à une parcelle
+let paMk=null;
+$("pa-go").onclick=()=>{const f=$("pa-f").value,n=$("pa-n").value.trim().replace(/^0+/,"");const e=(PARC[f]||"").split(";").map(x=>x.split(",")).find(x=>x[0]===n);
+  if(!e){status(`Parcelle ${esc(n)} introuvable dans cette forêt.`);return}const ll=[+e[1],+e[2]];$("s-cou").hidden=true;follow=false;
+  if(!$("c-parc").checked){$("c-parc").checked=true;OV.parc.addTo(map)}
+  if(paMk)map.removeLayer(paMk);paMk=L.marker(ll,{icon:pin("#2b5a3a",30,"P"+n,"8px"),zIndexOffset:1000}).addTo(map).bindPopup(`<div class="pop"><h3>Parcelle ${esc(n)}</h3><p>${esc($("pa-f").selectedOptions[0].textContent)} · centre de la parcelle</p><div class="links"><a href="${gmaps(ll[0],ll[1])}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(ll[0],ll[1],"Parcelle "+n)}</div></div>`);
+  map.setView(ll,16);setTimeout(()=>paMk.openPopup(),300)};
+$("pa-n").onkeydown=e=>{if(e.key==="Enter")$("pa-go").click()};
 // ---- Écran d'accueil
 function homeHello(){const h=new Date().getHours(),n=LS.get("cu-name","");$("hm-hello").textContent=(h<5||h>=18?"Bonsoir":"Bonjour")+(n?" "+n:"")+" 🍄";$("hm-name").hidden=!!n||LS.get("cu-name-skip",0)===1;
   $("hm-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}
