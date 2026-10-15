@@ -862,6 +862,9 @@ img.legend{max-width:100%;border:1px solid var(--line);border-radius:6px}
 .tile.big{grid-column:span 3;flex-direction:row;gap:12px;background:var(--moss);color:#fff;min-height:64px;font-size:1.05rem}
 .tile.danger{color:#b03a2e}
 .hm-last{display:flex;flex-direction:column;gap:6px}
+.rec-ic{position:relative}.rec-ic::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid #ff3b30;animation:recp 1.6s ease-out infinite}
+@keyframes recp{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.pop img.rec{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin:4px 0}
 .sos{background:#fff4e5;border:1px solid #f0b46a;border-radius:10px;padding:8px 10px;font-size:.88rem}.sos p{margin:4px 0}.sos a{color:#8a4b00;font-weight:600}.sos a.bad{color:#b03a2e}
 .qk{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qk button{min-height:92px;font:inherit;font-size:1.15rem;font-weight:700;border:2px solid var(--line);border-radius:16px;background:#fff;cursor:pointer}.qk button[data-qq="3"]{background:var(--moss);color:#fff;border-color:var(--moss)}
 .btn112{display:block;flex:1;text-align:center;font-weight:700;border-radius:10px;padding:12px;background:#b03a2e;color:#fff;text-decoration:none}
@@ -931,6 +934,7 @@ body.gants .lp-bot .row button{min-height:66px}
   <label class="ck"><input type="checkbox" id="c-essimg"> Carte IGN des essences, tous bois (image)</label>
   <img class="legend" id="ess-leg" alt="Légende des essences IGN" hidden>
   <label class="ck"><input type="checkbox" id="c-anc"> Forêts anciennes</label>
+  <label class="ck"><input type="checkbox" id="c-recent" checked> 🆕 Pousses récentes (iNaturalist, 30 derniers jours)</label>
   <label class="ck"><input type="checkbox" id="c-prsf"> Points de rencontre des secours en forêt</label>
   <div class="row"><button id="trail-clear">Terminer ce trajet (il reste dans Mes balades)</button></div>
   <div class="row"><button id="b-view">Charger les peuplements de la zone affichée (bois privés compris)</button></div>
@@ -1092,6 +1096,7 @@ body.gants .lp-bot .row button{min-height:66px}
   <div class="hcard" id="hm-name" hidden><h2>Comment vous appelez-vous ?</h2><p class="note">Pour vous dire bonjour. Le prénom reste sur ce téléphone.</p><div class="row" style="margin-top:8px"><input type="text" id="hm-name-in" placeholder="Votre prénom" autocomplete="given-name" style="flex:2;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:9px 12px"><button class="ok" id="hm-name-ok" style="flex:1">OK</button></div></div>
   <div class="hcard" id="hm-wx"><h2>Conditions de pousse</h2><div class="wx-txt">Chargement de la météo…</div></div>
   <div class="hcard"><h2>À chercher en ce moment</h2><div id="hm-top"></div><button class="back" id="hm-more">Voir tout le classement ›</button></div>
+  <div class="hcard" id="hm-recc" hidden><h2>🆕 Pousses récentes</h2><div class="hm-last" id="hm-rec"></div><p class="note" id="hm-rec-n" style="margin:6px 0 0"></p></div>
   <div class="tiles">
    <button class="tile big" id="t-go"><span class="ti">🗺️</span>Ouvrir la carte</button>
    <button class="tile" id="t-add"><span class="ti">📸</span>Noter un coin</button>
@@ -2093,6 +2098,31 @@ $("lost-share").onclick=()=>{if(!me)return;if(navigator.share)navigator.share({t
 $("lost-car-go").onclick=()=>{closeLost();if(CAR)setTarget({lat:CAR.lat,lon:CAR.lon,nom:"Ma voiture"})};
 $("lost-start").onclick=()=>{closeLost();const a=TRAIL.p[0];if(a){setTarget({lat:a[0],lon:a[1],nom:"Départ de ma balade"});trailLine.bringToFront()}};
 $("car-lost").onclick=()=>{$("s-car").hidden=true;openLost()};
+
+// ---- Pousses récentes : observations iNaturalist des 30 derniers jours (mises à jour à chaque ouverture)
+const RECSP=[["trompette",/^Craterellus cornucopioides/],["tube",/tubaeformis/],["girolle",/^Cantharellus (cibarius|pallens|amethysteus|subpruinosus|friesii|ferruginascens)/],
+ ["cepe",/^Boletus (edulis|reticulatus|aestivalis|aereus|pinophilus)/],["pied",/^Hydnum/],["morille",/^Morchella/],
+ ...Object.entries(NEW).map(([k,v])=>[k,new RegExp("^("+v.sci.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")")])];
+const recSp=n=>{for(const [k,re] of RECSP)if(re.test(n))return k;return null};
+const recLayer=L.layerGroup();let REC=LS.get("cu-recent",null),recBusy=false;
+const daysAgo=d=>{const n=Math.round((Date.now()-new Date(d+"T12:00:00"))/864e5);return n<=0?"aujourd'hui":n===1?"hier":`il y a ${n} jours`};
+function recIcon(sp,fresh){return L.divIcon({className:"",iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13],html:`<div class="${fresh?"rec-ic":""}" style="width:26px;height:26px;border-radius:50%;background:${COL[sp]||"#777"};border:3px solid #ff3b30;box-shadow:0 1px 4px rgba(0,0,0,.5);color:#fff;font:700 9px system-ui;display:flex;align-items:center;justify-content:center">NEW</div>`})}
+function recPop(o){return `<div class="pop"><h3>🆕 ${esc(SPN[o.sp]||o.sp)}</h3><p><b>${daysAgo(o.d)}</b> (${new Date(o.d).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})})${o.acc?` · ± ${o.acc} m`:""}</p>${o.ph?`<img class="rec" src="${o.ph}" alt="">`:""}<p><i>${esc(o.n)}</i> · ${o.q==="research"?"identification confirmée":"identification à confirmer"}${o.pl?`<br>${esc(o.pl)}`:""}</p><div class="links"><a href="https://www.inaturalist.org/observations/${o.id}" target="_blank" rel="noopener">Voir sur iNaturalist</a><a href="${gmaps(o.lat,o.lon)}" target="_blank" rel="noopener">Itinéraire</a>${aimLink(o.lat,o.lon,"Pousse récente")}</div></div>`}
+function drawRec(){recLayer.clearLayers();if(!REC)return;REC.obs.forEach(o=>L.marker([o.lat,o.lon],{icon:recIcon(o.sp,(Date.now()-new Date(o.d))/864e5<8),zIndexOffset:900}).bindPopup(recPop(o)).addTo(recLayer));
+  if($("c-recent").checked)recLayer.addTo(map);else map.removeLayer(recLayer)}
+async function loadRec(force){if(recBusy||!navigator.onLine)return;if(!force&&REC&&Date.now()-REC.t<3*36e5)return;recBusy=true;
+  try{const d1=ymd(new Date(Date.now()-30*864e5));let all=[];
+    for(let page=1;page<=4;page++){const r=await fetch(`https://api.inaturalist.org/v1/observations?swlat=50.3&swlng=1.5&nelat=51.0&nelng=2.45&d1=${d1}&iconic_taxa=Fungi&per_page=200&page=${page}&order=desc&order_by=observed_on`);if(!r.ok)break;const j=await r.json();all=all.concat(j.results);if(j.results.length<200)break}
+    const obs=all.map(o=>{const sp=o.taxon&&recSp(o.taxon.name);if(!sp||!o.location||o.obscured||(o.positional_accuracy||0)>500)return null;const [la,lo]=o.location.split(",").map(Number);
+      return {id:o.id,sp,n:o.taxon.name,d:o.observed_on,lat:la,lon:lo,acc:o.positional_accuracy||null,q:o.quality_grade,pl:o.place_guess||"",ph:o.photos&&o.photos[0]?o.photos[0].url.replace("square","small"):""}}).filter(Boolean);
+    REC={t:Date.now(),obs};LS.set("cu-recent",REC);drawRec();if(!$("home").hidden)renderHome()}catch(e){}finally{recBusy=false}}
+$("c-recent").onchange=e=>{LS.set("cu-recon",e.target.checked?1:0);drawRec();if(e.target.checked)loadRec(false)};
+$("c-recent").checked=LS.get("cu-recon",1)!==0;drawRec();setTimeout(()=>loadRec(false),1500);window.addEventListener("online",()=>loadRec(false));
+function renderRecHome(){const o=REC?[...REC.obs].sort((a,b)=>b.d.localeCompare(a.d)):[];$("hm-recc").hidden=!o.length;if(!o.length)return;
+  $("hm-rec").innerHTML=o.slice(0,5).map((x,k)=>`<button data-rc="${k}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[x.sp]||"#777"};outline:2px solid #ff3b30"></span><span><b>${esc(SPN[x.sp]||x.sp)}</b> · ${daysAgo(x.d)}${me?` · à ${fmt(dist(me,x))}`:""}<br><small class="note">${esc(x.pl||"")}</small></span></button>`).join("");
+  $("hm-rec-n").textContent=`${o.length} observation${o.length>1?"s":""} publiée${o.length>1?"s":""} sur iNaturalist ces 30 derniers jours (cercles rouges « NEW » sur la carte). Mis à jour à ${new Date(REC.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}.`;
+  $("hm-rec").querySelectorAll("[data-rc]").forEach(b=>b.onclick=()=>{const x=o[+b.dataset.rc];closeHome();follow=false;if(!$("c-recent").checked){$("c-recent").checked=true;LS.set("cu-recon",1);drawRec()}map.setView([x.lat,x.lon],16);
+    recLayer.eachLayer(m=>{const ll=m.getLatLng();if(ll.lat===x.lat&&ll.lng===x.lon)setTimeout(()=>m.openPopup(),300)})})}
 // ---- Écran d'accueil
 function homeHello(){const h=new Date().getHours(),n=LS.get("cu-name","");$("hm-hello").textContent=(h<5||h>=18?"Bonsoir":"Bonjour")+(n?" "+n:"")+" 🍄";$("hm-name").hidden=!!n||LS.get("cu-name-skip",0)===1;
   $("hm-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}
@@ -2109,6 +2139,7 @@ function renderHome(){homeHello();
   const un=unsaved(),st=LS.get("cu-savedt",0),old=coins.length&&un>0&&(un>=5||(st&&Date.now()-st>30*864e5)||(!st&&coins.length>=3));
   $("hm-save").hidden=!old;if(old)$("hm-save").innerHTML=`<h2>💾 Pensez à sauvegarder</h2><p class="note" style="margin:0 0 8px">${un} coin${un>1?"s":""} pas encore sauvegardé${un>1?"s":""}${st?` (dernière sauvegarde le ${new Date(st).toLocaleDateString("fr-FR")})`:""}. Si l'appli est supprimée du téléphone, tout est perdu.</p><div class="row"><button class="ok" id="hm-save-go">Sauvegarder maintenant</button></div>`;
   if(old)$("hm-save-go").onclick=()=>$("list-save").click();
+  renderRecHome();
   const rv=revisit();$("hm-revc").hidden=!rv.length;
   $("hm-rev").innerHTML=rv.map(o=>`<button data-k="${o.i}"><span class="dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${COL[o.f.sp]||"#777"}"></span><span><b>${esc(SPN[o.f.sp]||"Coin")}</b>${qtxt(o.f)?` · ${qtxt(o.f)}`:""}<br><small class="note">${esc(o.w)}</small></span></button>`).join("");
   $("hm-rev").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const f=coins[+b.dataset.k];closeHome();follow=false;map.setView([f.lat,f.lon],17)});
